@@ -1,6 +1,7 @@
 import time
 import math
 import random
+import numpy as np
 from traj_planner_utils import *
 
 TIME_STEP_SIZE = 0.01 #s
@@ -21,7 +22,7 @@ class TrajectoryTracker():
     self.current_point_to_track = 0
     self.traj = traj
     self.traj_tracked = False
-      
+
   def get_traj_point_to_track(self, current_state):
     """ Determine which point of the traj should be tracked at the current time.
         Arguments:
@@ -32,21 +33,21 @@ class TrajectoryTracker():
     self.current_point_to_track = 0
 
     return self.traj[self.current_point_to_track]
-  
+
   def print_traj(self):
     """ Print the trajectory points.
     """
     print("Traj:")
     for i in range(len(self.traj)):
         print(i,self.traj[i])
-          
+
   def is_traj_tracked(self):
     """ Return true if the traj is tracked.
         Returns:
           traj_tracked (boolean): True if traj has been tracked.
     """
     return self.traj_tracked
-    
+
 class PointTracker():
   """ A class to determine actions (motor control signals) for driving a robot to a position.
   """
@@ -64,8 +65,32 @@ class PointTracker():
         Arguments:
           desired_state (list of floats): The desired Time, X, Y, Theta (s, m, m, rad).
           current_state (list of floats): The current Time, X, Y, Theta (s, m, m, rad).
+
     """
+    delta_t = desired_state[0] - current_state[0]
+    delta_x = desired_state[1] - current_state[1]
+    delta_y = desired_state[2] - current_state[2]
+
+
+    theta = current_state[3]
+
+    rho = delta_x**2 + delta_y**2
+    alpha = angle_diff(-theta + np.arctan2(delta_y, delta_x))
+    beta = angle_diff(-theta - alpha + desired_state[3])
+
+    #Propotional Constants
+    k_r = 1
+    k_b = -2
+    k_a = 2
+
+    v = k_r * rho
+    w = k_a * alpha + k_b * beta
+
+    #Using equations from lecture 2A of E205, we solved for wheel velocities in terms of our PCs
+    v1 = v + w
+    v2 = v - w 
+
     # zero all of action
-    action = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
-    
+    action = [v1, v2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
+
     return action
