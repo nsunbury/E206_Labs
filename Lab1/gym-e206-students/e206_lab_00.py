@@ -42,7 +42,7 @@ def main():
   
 def create_motion_planning_problem():
   current_state = [0, 0, 0, 0]
-  desired_state = current_state #[20, 2.5, -2.5, 1.57]
+  desired_state = [20, 2.5, -2.5, 1.57]
   maxR = 8
   walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
   objects = [[4, 0, 1.0], [-2, -3, 1.5]]
