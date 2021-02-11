@@ -26,10 +26,13 @@ def construct_dubins_traj(traj_point_0, traj_point_1):
   turning_radius = 1
   path = dubins.shortest_path(q0, q1, turning_radius)
   configurations, _ = path.sample_many(DISTANCE_STEP_SIZE)
+  print(path)
+  print(configurations)
+  print(len(configurations))
 
   t_0 = traj_point_0[0]
   time_step = (traj_point_1[0] - traj_point_0[0])/len(configurations)
-  print(len(configurations))
+
   
   for i in range(0, len(configurations)):
     step = [t_0 + time_step*i, configurations[i][0], configurations[i][1], configurations[i][2]]
