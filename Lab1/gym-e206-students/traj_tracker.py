@@ -67,6 +67,7 @@ class PointTracker():
           current_state (list of floats): The current Time, X, Y, Theta (s, m, m, rad).
 
     """
+
     delta_t = desired_state[0] - current_state[0]
     delta_x = desired_state[1] - current_state[1]
     delta_y = desired_state[2] - current_state[2]
@@ -78,17 +79,22 @@ class PointTracker():
     alpha = angle_diff(-theta + np.arctan2(delta_y, delta_x))
     beta = angle_diff(-theta - alpha + desired_state[3])
 
+    # break out if the robot is close enough to the right point
+    if rho <= 0.1:
+      self.traj_tracked = True
+      print("Hi, I finished")
+
     #Propotional Constants
-    k_r = 1
-    k_b = -2
-    k_a = 2
+    k_r = 10  # k_r > 0
+    k_b = -2 # k_b <0
+    k_a = 20  # k_a > k_r
 
     v = k_r * rho
     w = k_a * alpha + k_b * beta
 
     #Using equations from lecture 2A of E205, we solved for wheel velocities in terms of our PCs
     v1 = v + w
-    v2 = v - w 
+    v2 = v - w
 
     # zero all of action
     action = [v1, v2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
