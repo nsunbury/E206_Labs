@@ -6,7 +6,6 @@
 import math
 import dubins
 import matplotlib.pyplot as plt
-import numpy as np
 
 DISTANCE_STEP_SIZE = 0.1 #m
 COLLISION_INDEX_STEP_SIZE = 5
@@ -26,27 +25,16 @@ def construct_dubins_traj(traj_point_0, traj_point_1):
   turning_radius = 1
   path = dubins.shortest_path(q0, q1, turning_radius)
   configurations, _ = path.sample_many(DISTANCE_STEP_SIZE)
-  print(path)
-  print(configurations)
-  print(len(configurations))
 
   t_0 = traj_point_0[0]
   time_step = (traj_point_1[0] - traj_point_0[0])/len(configurations)
-
-
+  print(len(configurations))
+  
   for i in range(0, len(configurations)):
     step = [t_0 + time_step*i, configurations[i][0], configurations[i][1], configurations[i][2]]
     traj.append(step)
-
+      
   return traj
-
-def arc_len(x0, y0, x1, y1, r):
-  dist = euclid_distance(x0, y0, x1, y1)
-  theta = 2 * math.asin(dist/(2*r))
-  return (theta * r)
-
-def euclid_distance(x0, y0, x1, y1):
-  return math.sqrt((x0-x1)**2 + (y0-y1)**2)
 
 def plot_traj(traj_desired, traj_actual, objects, walls):
   """ Plot a trajectory in the X-Y space and in the time-X,Y,Theta space.
@@ -97,7 +85,7 @@ def plot_traj(traj_desired, traj_actual, objects, walls):
   axis_array[0].set_xlabel('X (m)')
   axis_array[0].set_ylabel('Y (m)')
   axis_array[0].axis('equal')
-
+  
   axis_array[1].plot(time_stamp_desired, x_desired,'b')
   axis_array[1].plot(time_stamp_desired, y_desired,'b--')
   axis_array[1].plot(time_stamp_desired, theta_desired,'b-.')
@@ -108,7 +96,7 @@ def plot_traj(traj_desired, traj_actual, objects, walls):
   axis_array[1].legend(['X Desired (m)', 'Y Desired (m)', 'Theta Desired (rad)', 'X (m)', 'Y (m)', 'Theta (rad)'])
 
   plt.show()
-
+  
 def collision_found(traj, objects, walls):
   """ Return true if there is a collision with the traj and the workspace
       Arguments:
@@ -120,7 +108,7 @@ def collision_found(traj, objects, walls):
   """
 
   return False
-
+  
 def generate_distance_to_object(traj_point, obj):
   """ Calculate the deistance between a spherical object and a cylindrical robot.
       Argument:
@@ -130,7 +118,7 @@ def generate_distance_to_object(traj_point, obj):
         distance (float): The distance between a traj point and an object (m).
   """
   return math.sqrt( pow(traj_point[1]-obj[0],2) + pow(traj_point[2]-obj[1],2) )
-
+  
 def generate_distance_to_wall(traj_point, wall):
   """ Calculate the deistance between a spherical object and a cylindrical robot.
       Argument:
@@ -139,9 +127,9 @@ def generate_distance_to_wall(traj_point, wall):
       Returns:
         distance (float): The distance between a traj point and an object (m).
   """
-
+  
   return 0
-
+  
 def print_traj(traj):
   """ Print a trajectory as a list of traj points.
       Arguments:
@@ -150,7 +138,7 @@ def print_traj(traj):
   print("TRAJECTORY")
   for tp in traj:
     print("traj point - time:",tp[0], "x:", tp[1], "y:", tp[2], "theta:", tp[3] )
-
+    
 def angle_diff(ang):
   """ Function to push ang within the range of -pi and pi
       Arguments:
@@ -164,22 +152,12 @@ def angle_diff(ang):
     ang += 2*math.pi
 
   return ang
-
+  
 if __name__ == '__main__':
   tp0 = [0,0,0,0]
-  tp1 = [5, 3, 3, np.pi/2]
-
-  tp0 = [0, -3, -3,  -np.pi/4]
-  tp1 = [10, 3, 3, -np.pi/4]
-
-  tp0 = [0, -3, -3,  0]
-  tp1 = [5, 3, -3, 0]
-
-  tp0 = [0, -3, 0, np.pi/2]
-  tp1 = [10, 3, 0, -np.pi/2]
-
+  tp1 = [10,4,-4, -1.57]
   traj = construct_dubins_traj(tp0, tp1)
   maxR = 8
   walls = [[-maxR, maxR, maxR, maxR], [maxR, maxR, maxR, -maxR], [maxR, -maxR, -maxR, -maxR], [-maxR, -maxR, -maxR, maxR] ]
   objects = [[4, 0, 1.0], [-2, -3, 1.5]]
-  plot_traj(traj, traj, objects, walls)
+  plot_traj(traj, objects, walls)
