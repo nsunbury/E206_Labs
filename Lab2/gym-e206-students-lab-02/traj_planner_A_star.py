@@ -18,30 +18,29 @@ class Node():
     self.g_cost = g_cost
     self.h_cost = h_cost
     self.f_cost = self.g_cost + self.h_cost
-  
+
   def getState(self):
     return self.state
 
   def get_total_cost(self):
     return self.f_cost
-    
+
   def manhattan_distance_to_node(self, node):
     return abs(self.state[1] - node.state[1]) + abs(self.state[2] - node.state[2])
-  
+
   def manhattan_distance_to_state(self, state):
     return abs(self.state[1] - state[1]) + abs(self.state[2] - state[2])
-    
+
   def euclidean_distance_to_state(self, state):
     return math.sqrt( (self.state[1] - state[1])**2 + (self.state[2] - state[2])**2 )
 
 class A_Star_Planner():
-  
+
   DIST_TO_GOAL_THRESHOLD = 0.5 #m
   CHILDREN_DELTAS = [-0.5, -0.25, 0.0, 0.25, 0.5]
   DISTANCE_DELTA = 1.5 #m
   EDGE_TIME = 10 #s
   LARGE_NUMBER = 9999999
-
 
   def __init__(self):
     self.fringe = []
@@ -59,59 +58,52 @@ class A_Star_Planner():
     self.objects = objects
     self.walls = walls
     '''
-    - Create inital node 
-    - Loop until goal is found 
+    - Create inital node
+    - Loop until goal is found
     - tie? (check g-cost)
     - if goal is found return path (how do we store path?)
     - else return []
     '''
     init_node = self.create_initial_node(initial_state)
     self.add_to_fringe(init_node)
-    print("------------------------")
+    # print("------------------------")
     # TODO: maybe change the while loop to also check theta (might cause looping if we do)
     goal = self.generate_goal_node(init_node, desired_state)
     while(goal is None and len(self.fringe)!= 0):
       best_node = self.get_best_node_on_fringe()
       goal = self.generate_goal_node(best_node, desired_state)
-      print(f"Fringe: {[a.getState() for a in self.fringe]}")
+      # print(f"Fringe: {[a.state for a in self.fringe]}")
+      # print(f"G-Cost: {[a.g_cost for a in self.fringe]}") 
+      # print(f"H-Cost: {[a.h_cost for a in self.fringe]}")
+      # print(f"F-Cost: {[a.f_cost for a in self.fringe]}")
+
       children = self.get_children(best_node)
-      for child in children: 
-        self.add_to_fringe(child) 
-    if(goal is None): 
+      for child in children:
+        self.add_to_fringe(child)
+    if(goal is None):
       print("NO VALID PATHS")
       return []
 
-    # traj = []
-    # node_to_add = goal
-
-    # while node_to_add != None:
-    #   if(node_to_add.parent_node is not None):
-    #     traj_node_to_add, _ = construct_dubins_traj(node_to_add.parent_node.state, node_to_add.state)
-    #   traj = traj + traj_node_to_add
-    #   # node_list.insert(0, node_to_add)
-    #   node_to_add = node_to_add.parent_node
-    
-    # print(traj)
-    # return traj
+    print("last child: ", goal.parent_node.state, goal.state)
     return self.build_traj(goal)
-    
+
   def add_to_fringe(self, node):
-    if(len(self.fringe) == 0): 
+    if(len(self.fringe) == 0):
       self.fringe.append(node)
-    else: 
-      i = 0 
+    else:
+      i = 0
 
       # Insertion sort (inserting in an ascending order so list stays sorted)
-      while(i< len(self.fringe) and self.fringe[i].get_total_cost() > node.get_total_cost()):
-        i+= 1 
+      while(i< len(self.fringe) and self.fringe[i].get_total_cost() < node.get_total_cost()):
+        i+= 1
       self.fringe.insert(i,node)
-    
+
   def get_best_node_on_fringe(self):
     if(len(self.fringe) == 0):
       print(f"Fringe is empty, Current fringe:{self.fringe}")
       return
     return self.fringe.pop(0)
-    
+
   def get_children(self, node_to_expand):
     children_list = []
     parent_node = node_to_expand
@@ -129,19 +121,18 @@ class A_Star_Planner():
       # Collision checking
       if(not self.collision_found(parent_node, child_node)):
         children_list.append(child_node)
-        
+
     return children_list
 
   def generate_goal_node(self, node, desired_state):
     traj, traj_distance = construct_dubins_traj(node.state, desired_state)
+    desired_node = self.create_node(desired_state, node)
 
-    # print(f"collision found traj?:{collision_found(traj, self.objects, self.walls)}")
-    # print(f"collision found nodes?:{self.collision_found(node, self.create_node(desired_state, node))}")
 
-    if(not collision_found(traj, self.objects, self.walls)):
+    if(not self.collision_found(node, desired_node)):
       return self.create_node(desired_state, node)
     return None
-    
+
   def create_node(self, state, parent_node):
     h_cost = self.estimate_cost_to_goal(state)
     g_cost = parent_node.g_cost + self.calculate_edge_distance(state,parent_node)
@@ -158,19 +149,23 @@ class A_Star_Planner():
     traj, traj_distance = construct_dubins_traj(parent_node.state, state)
     if(collision_found(traj, self.objects, self.walls)):
       return A_Star_Planner.LARGE_NUMBER
-    else: 
+    else:
       return traj_distance
 
   def estimate_cost_to_goal(self, state):
     return math.sqrt( (self.desired_state[1] - state[1])**2 + (self.desired_state[2] - state[2])**2 )
 
   def build_traj(self, goal_node):
-    # node_list = [goal_node.parent_node, goal_node]
     node_list = []
     node_to_add = goal_node
+    node_tracker = []
+
     while node_to_add != None:
       node_list.insert(0, node_to_add)
+      node_tracker.insert(0, node_to_add.state)
       node_to_add = node_to_add.parent_node
+
+    print("nodes built up", node_tracker)
 
     traj = []
     for i in range(1,len(node_list)):
@@ -181,7 +176,7 @@ class A_Star_Planner():
       # TODO: Ask Prof. Clark, what is this doing?
       edge_traj, edge_traj_distance = construct_dubins_traj(traj_point_0, traj_point_1)
       traj = traj + edge_traj
-    
+
     return traj
 
   def collision_found(self, node_1, node_2):
@@ -197,6 +192,8 @@ class A_Star_Planner():
     traj, traj_distance = construct_dubins_traj(node_1.state, node_2.state)
     return collision_found(traj, self.objects, self.walls)
 
+# # Original Code from Prof. Clark
+
 if __name__ == '__main__':
   for i in range(0, 5):
     maxR = 10
@@ -206,7 +203,7 @@ if __name__ == '__main__':
     walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
     num_objects = 25
     objects = []
-    for j in range(0, num_objects): 
+    for j in range(0, num_objects):
       obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 0.5]
       while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
         obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 0.5]
@@ -214,3 +211,26 @@ if __name__ == '__main__':
     traj = planner.construct_traj(tp0, tp1, objects, walls)
     if len(traj) > 0:
       plot_traj(traj, traj, objects, walls)
+
+
+# Code to generate a setup with known obstacles and goal point instead of random
+
+# if __name__ == '__main__':
+#   for i in range(0, 2):
+#     maxR = 10
+#     tp0 = [0, -8, -8, 0]
+#     tp1 = [300, maxR-1,  maxR-1, 0]
+#     planner = A_Star_Planner()
+#     walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
+#     num_objects = 3
+#     objects = [[i,i,1.5], [2.5,0, 2.5], [-1, 0, 0.5], [5,-3, 5]]
+
+#     # for j in range(0, num_objects):
+#     #   obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 0.5]
+#     #   while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
+#     #     obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 0.5]
+#     #   objects.append(obj)
+
+#     traj = planner.construct_traj(tp0, tp1, objects, walls)
+#     if len(traj) > 0:
+#       plot_traj(traj, traj, objects, walls)

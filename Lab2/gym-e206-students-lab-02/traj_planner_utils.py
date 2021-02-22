@@ -8,7 +8,7 @@ import dubins
 import matplotlib.pyplot as plt
 
 DISTANCE_STEP_SIZE = 0.75 #m
-COLLISION_INDEX_STEP_SIZE = 5
+COLLISION_INDEX_STEP_SIZE = 1
 ROBOT_RADIUS = 0.4 #m
 
 def construct_dubins_traj(traj_point_0, traj_point_1):

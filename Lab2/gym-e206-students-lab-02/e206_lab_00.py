@@ -5,13 +5,17 @@ import math
 import random
 from traj_planner_utils import *
 from traj_tracker import *
-
+# from traj_planner_A_star import *
     
 def main():
   # Create a motion planning problem and solve it
   current_state, desired_state, objects, walls = create_motion_planning_problem()
   desired_traj = construct_dubins_traj(current_state, desired_state)
   
+# current_state, desired_state, objects, walls = create_motion_planning_problem()
+#   planner = A_Star_Planner() 
+#   desired_traj = planner.construct_traj(current_state, desired_state, objects, walls)
+
   # Construct an environment
   env = gym.make("fetch-v0") # <-- this we need to create
   env.set_parameters(TIME_STEP_SIZE, objects)
@@ -27,11 +31,12 @@ def main():
   current_time_stamp = 0
   observation = [0,0,0,0,0]
   actual_traj = []
+  is_last_point= False
   while not traj_tracker.is_traj_tracked():
       current_state = [current_time_stamp, observation[0], observation[1], observation[2]]
-      desired_state = traj_tracker.get_traj_point_to_track(current_state)
+      is_last_point, desired_state = traj_tracker.get_traj_point_to_track(current_state)
       print("Cur:",current_state,"Des:",desired_state)
-      action = controller.point_tracking_control(desired_state, current_state)
+      action = controller.point_tracking_control(desired_state, current_state, is_last_point)
       observation, reward, done, dummy = env.step(action)
       env.render('human')
       actual_traj.append(current_state)

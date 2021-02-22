@@ -44,8 +44,8 @@ class TrajectoryTracker():
 
       if (rho < MIN_DIST_TO_POINT and beta < MIN_ANG_TO_POINT):
         self.traj_tracked = True 
-
       return True, desired_state
+      
     else: 
       if(current_state[0] > self.traj_optimized[0][0]):
         self.traj_optimized = self.traj_optimized[1:]
