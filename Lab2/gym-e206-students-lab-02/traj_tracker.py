@@ -44,12 +44,13 @@ class TrajectoryTracker():
 
       if (rho < MIN_DIST_TO_POINT and beta < MIN_ANG_TO_POINT):
         self.traj_tracked = True 
-      return True, desired_state
+      return desired_state
       
     else: 
+      print(self.traj_optimized)
       if(current_state[0] > self.traj_optimized[0][0]):
         self.traj_optimized = self.traj_optimized[1:]
-      return False, self.traj_optimized[0]
+      return self.traj_optimized[0]
   
   def print_traj(self):
     """ Print the trajectory points.
@@ -80,7 +81,7 @@ class PointTracker():
     action = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
     return action
 
-  def point_tracking_control(self, desired_state, current_state, is_last_point):
+  def point_tracking_control(self, desired_state, current_state):
     """ Return the motor control signals as actions to drive a robot to a desired configuration
         Arguments:
           desired_state (list of floats): The desired Time, X, Y, Theta (s, m, m, rad).
@@ -98,9 +99,9 @@ class PointTracker():
     # For Path Tracking
     # reached_current_point = False
 
-    if (rho < MIN_DIST_TO_POINT and beta < MIN_ANG_TO_POINT):
-      if(is_last_point):
-        self.point_tracked = True 
+    # if (rho < MIN_DIST_TO_POINT and beta < MIN_ANG_TO_POINT):
+    #   if(is_last_point):
+    #     self.point_tracked = True 
       
       #For Path Tracking
       # reached_current_point = True
@@ -120,8 +121,8 @@ class PointTracker():
     k_a = 10 # k_a = 250
 
     if(rho < 0.25):
-      k_r *= 2
-      k_a *= 2
+      k_r *= 4
+      k_a *= 4
       
     v = k_r * rho
     w = k_a * alpha + k_b * beta

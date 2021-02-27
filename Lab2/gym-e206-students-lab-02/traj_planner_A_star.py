@@ -9,6 +9,7 @@ import random
 import matplotlib.pyplot as plt
 from traj_planner_utils import *
 import numpy as np
+import copy
 
 class Node():
 
@@ -38,8 +39,9 @@ class A_Star_Planner():
 
   DIST_TO_GOAL_THRESHOLD = 0.5 #m
   CHILDREN_DELTAS = [-0.5, -0.25, 0.0, 0.25, 0.5]
+  # CHILDREN_DELTAS = [-2.5, -1.5, -0.5, -0.25, 0.0, 0.25, 0.5, 1.5, 2.5]
   DISTANCE_DELTA = 1.5 #m
-  EDGE_TIME = 10 #s
+  EDGE_TIME = 5 #s
   LARGE_NUMBER = 9999999
 
   def __init__(self):
@@ -69,15 +71,21 @@ class A_Star_Planner():
     # print("------------------------")
     # TODO: maybe change the while loop to also check theta (might cause looping if we do)
     goal = self.generate_goal_node(init_node, desired_state)
-    while(goal is None and len(self.fringe)!= 0):
+    while(goal is None and len(self.fringe)!= 0 and len(self.fringe)< 2000):
       best_node = self.get_best_node_on_fringe()
       goal = self.generate_goal_node(best_node, desired_state)
-      # print(f"Fringe: {[a.state for a in self.fringe]}")
-      # print(f"G-Cost: {[a.g_cost for a in self.fringe]}") 
-      # print(f"H-Cost: {[a.h_cost for a in self.fringe]}")
-      # print(f"F-Cost: {[a.f_cost for a in self.fringe]}")
 
-      children = self.get_children(best_node)
+      #Distance 1398m, 96plots: 
+      children= []
+      if(best_node.parent_node == None):
+        print("init node")
+        children = self.get_children_with_backwards(best_node)
+      else:
+        children = self.get_children(best_node)
+
+      #Distance: 1357m, 85plots 
+      # children = self.get_children(best_node)
+
       for child in children:
         self.add_to_fringe(child)
     if(goal is None):
@@ -104,6 +112,35 @@ class A_Star_Planner():
       return
     return self.fringe.pop(0)
 
+  def get_children_with_backwards(self, node_to_expand):
+    children_list = []
+    parent_node = node_to_expand
+    
+
+    parent_node_backwards = copy.deepcopy(node_to_expand)
+    parent_node_backwards.state[3] = angle_diff(parent_node_backwards.state[3] + np.pi)
+    parent_nodes = [parent_node, parent_node_backwards]
+    print(node_to_expand .state)
+    print(parent_nodes[1].state)
+    for child_delta in A_Star_Planner.CHILDREN_DELTAS:
+      for curr_parent in parent_nodes:
+        parent_node_time, parent_node_x, parent_node_y, parent_node_theta = curr_parent.state
+        child_node_state = []
+        child_node_state.append(parent_node_time + A_Star_Planner.EDGE_TIME)
+        child_node_state.append(parent_node_x + A_Star_Planner.DISTANCE_DELTA * np.cos(parent_node_theta + child_delta))
+        child_node_state.append(parent_node_y + A_Star_Planner.DISTANCE_DELTA * np.sin(parent_node_theta + child_delta))
+        child_node_state.append(angle_diff(parent_node_theta + 2*child_delta))
+
+        child_node = self.create_node(child_node_state, curr_parent)
+
+        # Collision checking
+        if(not self.collision_found(curr_parent, child_node)):
+          print(child_node.state)
+          children_list.append(child_node)
+
+    return children_list
+
+
   def get_children(self, node_to_expand):
     children_list = []
     parent_node = node_to_expand
@@ -127,7 +164,6 @@ class A_Star_Planner():
   def generate_goal_node(self, node, desired_state):
     traj, traj_distance = construct_dubins_traj(node.state, desired_state)
     desired_node = self.create_node(desired_state, node)
-
 
     if(not self.collision_found(node, desired_node)):
       return self.create_node(desired_state, node)
@@ -168,6 +204,7 @@ class A_Star_Planner():
     print("nodes built up", node_tracker)
 
     traj = []
+    total_dist = 0 
     for i in range(1,len(node_list)):
       node_A = node_list[i-1]
       node_B = node_list[i]
@@ -175,8 +212,11 @@ class A_Star_Planner():
       traj_point_1 = node_B.state
       # TODO: Ask Prof. Clark, what is this doing?
       edge_traj, edge_traj_distance = construct_dubins_traj(traj_point_0, traj_point_1)
+      total_dist += edge_traj_distance
       traj = traj + edge_traj
-
+    print()
+    print("TOTAL DISTANCE:", total_dist)
+    print()
     return traj
 
   def collision_found(self, node_1, node_2):
@@ -193,11 +233,13 @@ class A_Star_Planner():
     return collision_found(traj, self.objects, self.walls)
 
 # # Original Code from Prof. Clark
-
+random.seed(12)
+total_distance = 0
+cnt = 0
 if __name__ == '__main__':
-  for i in range(0, 5):
+  for i in range(0, 100):
     maxR = 10
-    tp0 = [0, -8, -8, 0]
+    tp0 = [0, 0, -8, 0]
     tp1 = [300, random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 0]
     planner = A_Star_Planner()
     walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
@@ -208,22 +250,27 @@ if __name__ == '__main__':
       while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
         obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 0.5]
       objects.append(obj)
-    traj = planner.construct_traj(tp0, tp1, objects, walls)
-    if len(traj) > 0:
-      plot_traj(traj, traj, objects, walls)
+    traj, dist = planner.construct_traj(tp0, tp1, objects, walls)
+    total_distance+= dist
+    if(dist >0):
+      cnt+=1 
+    print("TOTAL DISTANCE OF PLOTS:", total_distance)
+  print("TOTAL COUNT", cnt)
+    # if len(traj) > 0:
+      # plot_traj(traj, traj, objects, walls)
 
 
 # Code to generate a setup with known obstacles and goal point instead of random
 
 # if __name__ == '__main__':
-#   for i in range(0, 2):
+#   for i in range(0, 5):
 #     maxR = 10
-#     tp0 = [0, -8, -8, 0]
-#     tp1 = [300, maxR-1,  maxR-1, 0]
+#     tp0 = [0, 0, 0, 0]
+#     tp1 = [25, 7, 7, 0]
 #     planner = A_Star_Planner()
 #     walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
-#     num_objects = 3
-#     objects = [[i,i,1.5], [2.5,0, 2.5], [-1, 0, 0.5], [5,-3, 5]]
+#     num_objects = 2
+#     objects = [[5, 7, 1], [9, 7, 1]]
 
 #     # for j in range(0, num_objects):
 #     #   obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 0.5]
