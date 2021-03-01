@@ -7,8 +7,8 @@ import math
 import dubins
 import matplotlib.pyplot as plt
 
-DISTANCE_STEP_SIZE = 0.1 #m
-COLLISION_INDEX_STEP_SIZE = 5
+DISTANCE_STEP_SIZE = 0.75 #m
+COLLISION_INDEX_STEP_SIZE = 1
 ROBOT_RADIUS = 0.4 #m
 
 def construct_dubins_traj(traj_point_0, traj_point_1):
@@ -21,10 +21,19 @@ def construct_dubins_traj(traj_point_0, traj_point_1):
         traj_distance (float): The length ofthe trajectory (m).
   """
   traj = []
-  traj_distance = 0
-  
-  # Add code here
+  q0 = traj_point_0[1:]
+  q1 = traj_point_1[1:]
+  turning_radius = 1
+  path = dubins.shortest_path(q0, q1, turning_radius)
+  configurations, _ = path.sample_many(DISTANCE_STEP_SIZE)
 
+  t_0 = traj_point_0[0]
+  time_step = (traj_point_1[0] - traj_point_0[0])/len(configurations)
+  traj_distance = len(configurations) * DISTANCE_STEP_SIZE
+  
+  for i in range(0, len(configurations)):
+    step = [t_0 + time_step*i, configurations[i][0], configurations[i][1], configurations[i][2]]
+    traj.append(step)
       
   return traj, traj_distance
 
