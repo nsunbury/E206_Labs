@@ -43,6 +43,7 @@ class Expansive_Planner():
     
   def __init__(self):
     self.fringe = []
+    self.rng = np.random.default_rng() #to generate a random number rfloat = self.rng.random()    
 
   def construct_traj(self, initial_state, desired_state, objects, walls):
     """ Construct a trajectory in the X-Y space and in the time-X,Y,Theta space.
@@ -94,10 +95,8 @@ class Expansive_Planner():
         Returns:
           node (Node): A randomly selected node from the tree.
     """
-    
-    # Add code here to return a random node from the tree #
-    
-    return None
+        
+    return self.tree[int(self.rng.random()*len(self.tree))] # OUT OF BOUNDS ERRORS? Check this
     
   def generate_random_node(self, node_to_expand):
     """ Create a new node by expanding from the parent node using.
@@ -106,7 +105,19 @@ class Expansive_Planner():
         Returns:
           new_node (Node): The newly generated node.
     """
+    rand_node= Node(random_state, node_to_expand, edge_to_random_node)
+
     
+    rand_angle = self.rng.random() * 2 * np.pi - np.pi
+
+#   child_node.time = parent_node.time + random_distance/MEAN_EDGE_VELOCITY
+
+#   child_node.x = parent_node.x + random_distance * cos(parent_node.theta + random_angle)
+
+#   child_node.y = parent_node.y + random_distance * sin(parent_node.theta + random_angle)
+
+#   child_node.theta = parent_node.theta + 2*random_angle
+
     # Add code here to make a new node #
     
     return None
@@ -118,10 +129,11 @@ class Expansive_Planner():
         Returns:
           goal_node: The newly generated goal node or None if there is not goal connection.
     """
-    
-    # Add code here to make a goal node if possible #
-   
-      
+    traj, traj_distance = construct_dubins_traj(node.state, desired_state)
+    desired_node = self.create_node(desired_state, node)
+
+    if(not self.collision_found(node, desired_node)):
+      return self.create_node(desired_state, node)
     return None
 
   def calculate_edge_distance(self, state, parent_node):
