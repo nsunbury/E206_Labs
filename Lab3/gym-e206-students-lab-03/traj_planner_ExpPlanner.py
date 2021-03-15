@@ -58,10 +58,24 @@ class Expansive_Planner():
     self.desired_state = desired_state
     self.objects = objects
     self.walls = walls
-    
+
+    current_node = Node(initial_state, None, 0)
+    self.add_to_tree(current_node)
+    goal = self.generate_goal_node(current_node, self.desired_state)
+
     # Add code here to make a traj #
+    while(goal is None and len(self.tree) < 200): 
+      current_node = self.generate_random_node(self.sample_random_node())
+      while(current_node is None): 
+        current_node = self.generate_random_node(self.sample_random_node())
+      self.add_to_tree(current_node)
+      goal = self.generate_goal_node(current_node, self.desired_state)
+
+    if(goal is None):  
+      print("NO PATH FOUND")
+      return [], self.LARGE_NUMBER
       
-    return [], self.LARGE_NUMBER
+    return self.build_traj(goal)
     
   def construct_optimized_traj(self, initial_state, desired_state, objects, walls):
     """ Construct the best trajectory possible within a limited time budget.
@@ -75,6 +89,17 @@ class Expansive_Planner():
     start_time = time.perf_counter()
     best_traj = []
     best_traj_cost = self.LARGE_NUMBER
+    cnt = 0
+
+    while (time.perf_counter()-start_time < self.PLAN_TIME_BUDGET):
+      cnt +=1 
+      traj, traj_dist = self.construct_traj(initial_state, desired_state, objects, walls)
+      if(traj_dist < best_traj_cost): 
+        best_traj = traj 
+        best_traj_cost = traj_dist 
+    print(start_time)
+    print(time.perf_counter(), cnt)
+
     
     # Add code here to make many trajs within a time budget and return the best traj #
     # You will want to call construct_traj #
@@ -86,16 +111,15 @@ class Expansive_Planner():
         Arguments:
           node (Node): The node to be added.
     """
-    
-    # Add code here to add a node to the tree#
-    pass
+    self.tree.append(node)
+    return 
     
   def sample_random_node(self):
     """ Randomly select a node from the tree and return it.
         Returns:
           node (Node): A randomly selected node from the tree.
     """
-        
+    #Naive Approach     
     return self.tree[int(self.rng.random()*len(self.tree))] # OUT OF BOUNDS ERRORS? Check this
     
   def generate_random_node(self, node_to_expand):
@@ -104,22 +128,23 @@ class Expansive_Planner():
           node_to_expand (Node): The parent node.
         Returns:
           new_node (Node): The newly generated node.
-    """
-    rand_node= Node(random_state, node_to_expand, edge_to_random_node)
+    """    
+    rand_angle = angle_diff(self.rng.random() * 2 * np.pi - np.pi)
+    rand_dist =  self.MIN_RAND_DISTANCE + self.rng.random() * (self.MAX_RAND_DISTANCE- self.MIN_RAND_DISTANCE)
 
-    
-    rand_angle = self.rng.random() * 2 * np.pi - np.pi
-
-#   child_node.time = parent_node.time + random_distance/MEAN_EDGE_VELOCITY
-
-#   child_node.x = parent_node.x + random_distance * cos(parent_node.theta + random_angle)
-
-#   child_node.y = parent_node.y + random_distance * sin(parent_node.theta + random_angle)
-
-#   child_node.theta = parent_node.theta + 2*random_angle
+    parent_node_time, parent_node_x, parent_node_y, parent_node_theta = node_to_expand.state
+    random_state = []
+    random_state.append(parent_node_time + rand_dist/self.MEAN_EDGE_VELOCITY)
+    random_state.append(parent_node_x + rand_dist * np.cos(parent_node_theta + rand_angle))
+    random_state.append(parent_node_y + rand_dist * np.sin(parent_node_theta + rand_angle))
+    random_state.append(angle_diff(parent_node_theta + 2 * rand_angle))
 
     # Add code here to make a new node #
-    
+    rand_node = Node(random_state, node_to_expand, rand_dist)
+
+    if(not self.collision_found(node_to_expand, rand_node)):
+      return rand_node
+
     return None
 
   def generate_goal_node(self, node, desired_state):
@@ -130,10 +155,10 @@ class Expansive_Planner():
           goal_node: The newly generated goal node or None if there is not goal connection.
     """
     traj, traj_distance = construct_dubins_traj(node.state, desired_state)
-    desired_node = self.create_node(desired_state, node)
+    desired_node = Node(desired_state, node, traj_distance)
 
     if(not self.collision_found(node, desired_node)):
-      return self.create_node(desired_state, node)
+      return desired_node
     return None
 
   def calculate_edge_distance(self, state, parent_node):
@@ -193,6 +218,7 @@ class Expansive_Planner():
 
 if __name__ == '__main__':
   for i in range(0, 5):
+    print("------------------------------------------------------------------")
     maxR = 10
     tp0 = [0, -8, -8, 0]
     tp1 = [300, 8, 8, 0]
@@ -205,6 +231,7 @@ if __name__ == '__main__':
       while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
         obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
       objects.append(obj)
-    traj, traj_cost = planner.construct_optimized_traj(tp0, tp1, objects, walls)
+    # traj, traj_cost = planner.construct_optimized_traj(tp0, tp1, objects, walls)
+    traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
     if len(traj) > 0:
       plot_traj(traj, traj, objects, walls)

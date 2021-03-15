@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 DISTANCE_STEP_SIZE = 0.75 #m
 COLLISION_INDEX_STEP_SIZE = 1
-ROBOT_RADIUS = 0.4 #m
+ROBOT_RADIUS = 1 #m
 
 def construct_dubins_traj(traj_point_0, traj_point_1):
   """ Construc a trajectory in the X-Y space and in the time-X,Y,Theta space.
