@@ -39,7 +39,10 @@ class Expansive_Planner():
   MIN_RAND_DISTANCE = 1.0 #m
   MAX_RAND_DISTANCE = 5.0 #m
   MEAN_EDGE_VELOCITY = 0.75 #m
-  PLAN_TIME_BUDGET = 0.5 #s
+  PLAN_TIME_BUDGET = 0.1 #s
+
+  TREE_SIZE_LIMIT = 200 # To stop the tree from expanding forever if no valid paths exist
+  SAMPLE_ATTEMPT_LIMIT = 10000 # To stop the code from hanging if it can't sample a valid node
     
   def __init__(self):
     self.fringe = []
@@ -62,12 +65,18 @@ class Expansive_Planner():
     current_node = Node(initial_state, None, 0)
     self.add_to_tree(current_node)
     goal = self.generate_goal_node(current_node, self.desired_state)
+    print(goal)
 
     # Add code here to make a traj #
-    while(goal is None and len(self.tree) < 200): 
+    while(goal is None and len(self.tree) < self.TREE_SIZE_LIMIT): 
       current_node = self.generate_random_node(self.sample_random_node())
+      i = 0
       while(current_node is None): 
+        if(i == self.SAMPLE_ATTEMPT_LIMIT):
+          print("NO PATH FOUND")
+          return [], self.LARGE_NUMBER
         current_node = self.generate_random_node(self.sample_random_node())
+        i += 1
       self.add_to_tree(current_node)
       goal = self.generate_goal_node(current_node, self.desired_state)
 
@@ -213,12 +222,13 @@ class Expansive_Planner():
         Returns:
           collision_found (boolean): True if there is a collision.
     """
-    traj, traj_distance = construct_dubins_traj(node_1.state, node_2.state)
+    traj, _ = construct_dubins_traj(node_1.state, node_2.state)
     return collision_found(traj, self.objects, self.walls)
 
 if __name__ == '__main__':
   for i in range(0, 5):
     print("------------------------------------------------------------------")
+    print("Trial Number: ", i + 1)
     maxR = 10
     tp0 = [0, -8, -8, 0]
     tp1 = [300, 8, 8, 0]
