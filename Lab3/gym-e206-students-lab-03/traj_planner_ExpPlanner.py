@@ -42,7 +42,7 @@ class Expansive_Planner():
   MEAN_EDGE_VELOCITY = 0.75 #m
   PLAN_TIME_BUDGET = 0.1 #s
 
-  TREE_SIZE_LIMIT = 200 # To stop the tree from expanding forever if no valid paths exist
+  TREE_SIZE_LIMIT = 1000 # To stop the tree from expanding forever if no valid paths exist
   SAMPLE_ATTEMPT_LIMIT = 10000 # To stop the code from hanging if it can't sample a valid node
     
   def __init__(self):
@@ -61,27 +61,34 @@ class Expansive_Planner():
     self.desired_state = desired_state
     self.objects = objects
     self.walls = walls
-
+ 
     current_node = Node(initial_state, None, 0)
     self.add_to_tree(current_node)
     goal = self.generate_goal_node(current_node, self.desired_state)
-    # print(goal)
+    print("Initial goal found: ", goal)
 
     # Add code here to make a traj #
-    while(goal is None and len(self.tree) < self.TREE_SIZE_LIMIT): 
+    tree_size_counter = 0
+    sample_attempt_counter = 0
+    while(goal is None): 
+      if(tree_size_counter == self.TREE_SIZE_LIMIT):
+        print("NO PATH FOUND - Tree Size Limit Reached")
+        return [], self.LARGE_NUMBER
+
       current_node = self.generate_random_node(self.sample_random_node())
-      i = 0
+  
       while(current_node is None): 
         if(i == self.SAMPLE_ATTEMPT_LIMIT):
           print("NO PATH FOUND - Sample Attempt Limit Reached")
           return [], self.LARGE_NUMBER
         current_node = self.generate_random_node(self.sample_random_node())
-        i += 1
+        sample_attempt_counter += 1
       self.add_to_tree(current_node)
       goal = self.generate_goal_node(current_node, self.desired_state)
+      tree_size_counter += 1
 
     if(goal is None):  
-      print("NO PATH FOUND - No Collision Free Paths Found")
+      print("NO PATH FOUND - Broke out of Loop")
       return [], self.LARGE_NUMBER
       
     return self.build_traj(goal)
@@ -121,9 +128,9 @@ class Expansive_Planner():
           node (Node): The node to be added.
     """
     # print(node.state)
-    if(node.parent_node is not None):
+    # if(node.parent_node is not None):
       # print("parent:", node.parent_node.state)
-      print()
+      # print()
     self.tree.append(node)
     return 
     
@@ -159,7 +166,7 @@ class Expansive_Planner():
     
     if(not self.collision_found(node_to_expand, rand_node_copy)):
       # print(f"NO COLLISION {node_to_expand.state} to {rand_node_copy.state}" )
-      print(rand_node.state, rand_node_copy.state)
+      # print(rand_node.state, rand_node_copy.state)
       return rand_node
 
     # print("COLLISION", rand_node.state)
@@ -212,19 +219,19 @@ class Expansive_Planner():
   
     traj = []
     traj_cost = 0
-    print("Building Trajectory")
+    # print("Building Trajectory")
     for i in range(1,len(node_list)):
       node_A = node_list[i-1]
       node_B = node_list[i]
-      print(node_A.state)
+      # print(node_A.state)
       traj_point_0 = node_A.state
       traj_point_1 = node_B.state
       traj_point_1[3] = math.atan2(traj_point_1[2]-traj_point_0[2], traj_point_1[1]-traj_point_0[1])
       edge_traj, edge_traj_distance = construct_dubins_traj(traj_point_0, traj_point_1)
       traj = traj + edge_traj
       traj_cost = traj_cost + edge_traj_distance
-      if(self.collision_found(node_A, node_B)):
-        print("Collision found in build_traj final trajectory")
+      # if(self.collision_found(node_A, node_B)):
+        # print("Collision found in build_traj final trajectory")
     return traj, traj_cost
 
   def collision_found(self, node_1, node_2):
@@ -242,8 +249,8 @@ class Expansive_Planner():
 
 if __name__ == '__main__':
   for i in range(0, 5):
-    print("------------------------------------------------------------------")
-    print("Trial Number: ", i + 1)
+    # print("------------------------------------------------------------------")
+    # print("Trial Number: ", i + 1)
     maxR = 10
     tp0 = [0, -8, -8, 0]
     tp1 = [300, 8, 8, 0]
@@ -258,6 +265,6 @@ if __name__ == '__main__':
     #   objects.append(obj)
     # traj, traj_cost = planner.construct_optimized_traj(tp0, tp1, objects, walls)
     traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
-    print(collision_found(traj,objects,walls))
+    # print(collision_found(traj,objects,walls))
     if len(traj) > 0:
       plot_traj(traj, traj, objects, walls)
