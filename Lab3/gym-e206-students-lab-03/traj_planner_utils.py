@@ -114,11 +114,12 @@ def collision_found(traj, objects, walls):
       obj_distance = generate_distance_to_object(traj_point, obj) - obj[2] - ROBOT_RADIUS
       if obj_distance < 0:
         return True
+  
     for wall in walls:
       wall_distance = generate_distance_to_wall(traj_point, wall) - ROBOT_RADIUS
       if wall_distance < 0:
         return True
-    
+
     index += COLLISION_INDEX_STEP_SIZE
   
   return False
