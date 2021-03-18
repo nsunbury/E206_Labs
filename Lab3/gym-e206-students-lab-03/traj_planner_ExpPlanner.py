@@ -28,6 +28,24 @@ class Node():
   def euclidean_distance_to_state(self, state):
     return math.sqrt( (self.state[1] - state[1])**2 + (self.state[2] - state[2])**2 )
 
+  def print(self):
+    """ Debugging method: prints all aspects of a node, handling None types properly
+    """
+    if(self != None):
+      state = self.state
+      edge_distance = self.edge_distance
+    else:
+      state = "None"
+      edge_distance = "None"
+    
+    if(self.parent_node != None):
+      parent = self.parent_node.state
+    else:
+      parent = "None"
+    
+    print("State:", state, " Parent:", parent, " Edge Distance:", edge_distance)
+
+
 class Expansive_Planner():
   
   DISTANCE_DELTA = 1.5 #m
