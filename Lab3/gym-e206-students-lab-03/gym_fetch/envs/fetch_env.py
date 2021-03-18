@@ -58,7 +58,7 @@ class FetchEnv(gym.Env):
     p.setTimeStep(self.time_step_size) # sec
     planeId = p.loadURDF("plane.urdf")
     for obj in self.objects:
-      objectId = p.loadURDF("sphere2.urdf",[obj[0],obj[1],obj[2]],p.getQuaternionFromEuler([0,0,0]), globalScaling=obj[2])
+      objectId = p.loadURDF("sphere2.urdf",[obj[0],obj[1],0.5],p.getQuaternionFromEuler([0,0,0]), globalScaling=obj[2])
     cubeStartPos = [0,0,0.001]
     cubeStartOrientation = p.getQuaternionFromEuler([0,0,0])
 

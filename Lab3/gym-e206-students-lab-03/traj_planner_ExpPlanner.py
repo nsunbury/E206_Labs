@@ -28,6 +28,23 @@ class Node():
   def euclidean_distance_to_state(self, state):
     return math.sqrt( (self.state[1] - state[1])**2 + (self.state[2] - state[2])**2 )
 
+  def print(self):
+    """ Debugging method: prints all aspects of a node, handling None types properly
+    """
+    if(self != None):
+      state = self.state
+      edge_distance = self.edge_distance
+    else:
+      state = "None"
+      edge_distance = "None"
+    
+    if(self.parent_node != None):
+      parent = self.parent_node.state
+    else:
+      parent = "None"
+    
+    print("State:", state, " Parent:", parent, " Edge Distance:", edge_distance)
+
 class Expansive_Planner():
   
   DISTANCE_DELTA = 1.5 #m
@@ -44,6 +61,13 @@ class Expansive_Planner():
 
   TREE_SIZE_LIMIT = 1000 # To stop the tree from expanding forever if no valid paths exist
   SAMPLE_ATTEMPT_LIMIT = 10000 # To stop the code from hanging if it can't sample a valid node
+
+  print("Min-Max Random Distance: ", MIN_RAND_DISTANCE, ",", MAX_RAND_DISTANCE)
+  print("Tree Size Limit: ", TREE_SIZE_LIMIT)
+  print("Sample Attempt Limit: ", SAMPLE_ATTEMPT_LIMIT)
+  print("Plan Time Budget: ", PLAN_TIME_BUDGET)
+  print("-----------------------------")
+  print("")
     
   def __init__(self):
     self.rng = np.random.default_rng() #to generate a random number rfloat = self.rng.random()    
@@ -61,15 +85,18 @@ class Expansive_Planner():
     self.desired_state = desired_state
     self.objects = objects
     self.walls = walls
- 
+
     current_node = Node(initial_state, None, 0)
+    print("Initial node: ", end = " ")
+    current_node.print()
     self.add_to_tree(current_node)
     goal = self.generate_goal_node(current_node, self.desired_state)
-    print("Initial goal found: ", goal)
+    print("Initial goal node generated: ", goal)
 
     # Add code here to make a traj #
     tree_size_counter = 0
     sample_attempt_counter = 0
+
     while(goal is None): 
       if(tree_size_counter == self.TREE_SIZE_LIMIT):
         print("NO PATH FOUND - Tree Size Limit Reached")
@@ -83,6 +110,7 @@ class Expansive_Planner():
           return [], self.LARGE_NUMBER
         current_node = self.generate_random_node(self.sample_random_node())
         sample_attempt_counter += 1
+
       self.add_to_tree(current_node)
       goal = self.generate_goal_node(current_node, self.desired_state)
       tree_size_counter += 1
@@ -165,10 +193,22 @@ class Expansive_Planner():
     rand_node_copy = copy.deepcopy(rand_node)
     
     if(not self.collision_found(node_to_expand, rand_node_copy)):
+      print("no collision found between nodes:")
+      print("start ", end="")
+      node_to_expand.print()
+      print("end ", end="")
+      rand_node_copy.print()
+      print()
       # print(f"NO COLLISION {node_to_expand.state} to {rand_node_copy.state}" )
       # print(rand_node.state, rand_node_copy.state)
       return rand_node
-
+    else:
+      print(" collision found between nodes:")
+      print("start", end="")
+      node_to_expand.print()
+      print("end", end="")
+      rand_node_copy.print()
+      print()
     # print("COLLISION", rand_node.state)
 
     return None
@@ -184,6 +224,7 @@ class Expansive_Planner():
     desired_node = Node(desired_state, node, traj_distance)
     
     if(not self.collision_found(node, desired_node)):
+      print("No collision between goal node and parent")
       # print(f"NO COLLISION FOUND BETWEEN - {node.state} and {desired_node.state}")
       return desired_node
     # print(f"COLLISION FOUND BETWEEN - {node.state} and {desired_node.state}")
@@ -213,9 +254,14 @@ class Expansive_Planner():
     """
     node_list = []
     node_to_add = goal_node
+    print("Goal Node", end = " ")
+    goal_node.print()
     while node_to_add != None:
       node_list.insert(0, node_to_add)
       node_to_add = node_to_add.parent_node
+      if (node_to_add != None):
+        print("Node added:", end = " ")
+        node_to_add.print()
   
     traj = []
     traj_cost = 0

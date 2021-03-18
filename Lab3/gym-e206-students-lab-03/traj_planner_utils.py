@@ -12,6 +12,12 @@ DISTANCE_STEP_SIZE = 0.75 #m
 COLLISION_INDEX_STEP_SIZE = 1
 ROBOT_RADIUS = 0.4 #m
 
+print("----Current Test Settings----")
+print("Robot Radius: ", ROBOT_RADIUS)
+print("Distance Step Size: ", DISTANCE_STEP_SIZE)
+print("Collision Index Step Size: ", COLLISION_INDEX_STEP_SIZE)
+
+
 def construct_dubins_traj(traj_point_0, traj_point_1):
   """ Construc a trajectory in the X-Y space and in the time-X,Y,Theta space.
       Arguments:
@@ -28,7 +34,7 @@ def construct_dubins_traj(traj_point_0, traj_point_1):
   # Using Linear trajectories
   configurations = lpg.construct_linear_path(q0,q1,DISTANCE_STEP_SIZE)
 
-  # # Using Dubins trajectories
+  # Using Dubins trajectories
   # turning_radius = 1
   # path = dubins.shortest_path(q0, q1, turning_radius)
   # configurations, _ = path.sample_many(DISTANCE_STEP_SIZE)
