@@ -243,16 +243,18 @@ class Expansive_Planner():
     return collision_found(traj, self.objects, self.walls)
 
 if __name__ == '__main__':
-  tot_dist = 0
-  trys = 0 
+  
   plan_budgets = [0.1,0.1, 0.5, 0.5,1]
   tree_size_limits = [200,1000,200,1000,200]
-  sample_limits = [10000,10000, 10000, 10000, 10000]
-  N = 10
+  sample_limits = [1000,1000, 1000, 1000, 1000]
+  N = 100
 
   for trial in range(len(plan_budgets)):
     planner = Expansive_Planner(plan_budgets[trial], tree_size_limits[trial], sample_limits[trial])
-
+    print(f"Expansive Planner:")
+    print(f"Plan Time Budget: {plan_budgets[trial]}, Tree Size Limit: {tree_size_limits[trial]}, Sample Limit: {sample_limits[trial]}")
+    tot_dist = 0
+    trys = 0 
     for i in range(0, N):
       # print("------------------------------------------------------------------")
       # print("Trial Number: ", i + 1)
@@ -274,8 +276,6 @@ if __name__ == '__main__':
       # traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
       # if len(traj) > 0:
       #   plot_traj(traj, traj, objects, walls)
-    print(f"Expansive Planner:")
-    print(f"Plan Time Budget: {plan_budgets[trial]}, Tree Size Limit: {tree_size_limits[trial]}, Sample Limit: {sample_limits[trial]}")
     print("Avg. dist per trial")
     print(tot_dist/N)
     print("Avg. no of tries per trial")
