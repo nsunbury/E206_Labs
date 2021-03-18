@@ -40,7 +40,7 @@ class Expansive_Planner():
   MIN_RAND_DISTANCE = 1 #m
   MAX_RAND_DISTANCE = 5 #m
   MEAN_EDGE_VELOCITY = 0.75 #m
-  PLAN_TIME_BUDGET = 0.1 #s
+  PLAN_TIME_BUDGET = 0.5 #s
 
   TREE_SIZE_LIMIT = 200 # To stop the tree from expanding forever if no valid paths exist
   SAMPLE_ATTEMPT_LIMIT = 10000 # To stop the code from hanging if it can't sample a valid node
@@ -121,9 +121,9 @@ class Expansive_Planner():
           node (Node): The node to be added.
     """
     # print(node.state)
-    if(node.parent_node is not None):
+    # if(node.parent_node is not None):
       # print("parent:", node.parent_node.state)
-      print()
+      # print()
     self.tree.append(node)
     return 
     
@@ -159,7 +159,7 @@ class Expansive_Planner():
     
     if(not self.collision_found(node_to_expand, rand_node_copy)):
       # print(f"NO COLLISION {node_to_expand.state} to {rand_node_copy.state}" )
-      print(rand_node.state, rand_node_copy.state)
+      # print(rand_node.state, rand_node_copy.state)
       return rand_node
 
     # print("COLLISION", rand_node.state)
@@ -219,7 +219,7 @@ class Expansive_Planner():
       print(node_A.state)
       traj_point_0 = node_A.state
       traj_point_1 = node_B.state
-      traj_point_1[3] = math.atan2(traj_point_1[2]-traj_point_0[2], traj_point_1[1]-traj_point_0[1])
+      #traj_point_1[3] = math.atan2(traj_point_1[2]-traj_point_0[2], traj_point_1[1]-traj_point_0[1])
       edge_traj, edge_traj_distance = construct_dubins_traj(traj_point_0, traj_point_1)
       traj = traj + edge_traj
       traj_cost = traj_cost + edge_traj_distance
@@ -249,15 +249,16 @@ if __name__ == '__main__':
     tp1 = [300, 8, 8, 0]
     planner = Expansive_Planner()
     walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
-    num_objects = 4
-    objects = [[1,1,3], [3,5,1],[5,7,1],[-2,-7,1], [-5,-7,1]]
-    # for j in range(0, num_objects): 
-    #   obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
-    #   while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
-    #     obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
-    #   objects.append(obj)
-    # traj, traj_cost = planner.construct_optimized_traj(tp0, tp1, objects, walls)
-    traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
+    num_objects = 10
+    # objects = [[1,1,3], [3,5,1],[5,7,1],[-2,-7,1], [-5,-7,1]]
+    objects  = []
+    for j in range(0, num_objects): 
+      obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
+      while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
+        obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
+      objects.append(obj)
+    traj, traj_cost = planner.construct_optimized_traj(tp0, tp1, objects, walls)
+    # traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
     print(collision_found(traj,objects,walls))
     if len(traj) > 0:
       plot_traj(traj, traj, objects, walls)
