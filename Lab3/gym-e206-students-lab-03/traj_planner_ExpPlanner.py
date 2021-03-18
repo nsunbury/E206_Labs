@@ -203,10 +203,10 @@ class Expansive_Planner():
       # print(rand_node.state, rand_node_copy.state)
       return rand_node
     else:
-      print(" collision found between nodes:")
-      print("start", end="")
+      print("collision found between nodes:")
+      print("start ", end="")
       node_to_expand.print()
-      print("end", end="")
+      print("end ", end="")
       rand_node_copy.print()
       print()
     # print("COLLISION", rand_node.state)
