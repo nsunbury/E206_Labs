@@ -294,8 +294,8 @@ if __name__ == '__main__':
       # traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
       # if len(traj) > 0:
       #   plot_traj(traj, traj, objects, walls)
-    print("Avg. dist per trial")
+    print("Avg. dist per trial", end="")
     print(tot_dist/N)
-    print("Avg. no of tries per trial")
+    print("Avg. no of tries per trial: ", end="")
     print(trys/N)
     print()
