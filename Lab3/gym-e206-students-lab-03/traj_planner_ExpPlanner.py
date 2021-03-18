@@ -40,13 +40,18 @@ class Expansive_Planner():
   MIN_RAND_DISTANCE = 1 #m
   MAX_RAND_DISTANCE = 5 #m
   MEAN_EDGE_VELOCITY = 0.75 #m
-  PLAN_TIME_BUDGET = 0.5 #s
+  PLAN_TIME_BUDGET = 1 #s
 
   TREE_SIZE_LIMIT = 200 # To stop the tree from expanding forever if no valid paths exist
-  SAMPLE_ATTEMPT_LIMIT = 10000 # To stop the code from hanging if it can't sample a valid node
+  SAMPLE_ATTEMPT_LIMIT = 1000 # To stop the code from hanging if it can't sample a valid node
     
-  def __init__(self):
-    self.rng = np.random.default_rng() #to generate a random number rfloat = self.rng.random()    
+  def __init__(self, plan_time_budget=0.5, tree_size_limit=200, sample_attempt_limit=10000):
+    self.rng = np.random.default_rng() #to generate a random number rfloat = self.rng.random()  
+    self.PLAN_TIME_BUDGET = plan_time_budget #s
+    self.TREE_SIZE_LIMIT = tree_size_limit # To stop the tree from expanding forever if no valid paths exist
+    self.SAMPLE_ATTEMPT_LIMIT = sample_attempt_limit # To stop the code from hanging if it can't sample a valid node
+    
+    
 
   def construct_traj(self, initial_state, desired_state, objects, walls):
     """ Construct a trajectory in the X-Y space and in the time-X,Y,Theta space.
@@ -73,7 +78,7 @@ class Expansive_Planner():
       i = 0
       while(current_node is None): 
         if(i == self.SAMPLE_ATTEMPT_LIMIT):
-          print("NO PATH FOUND - Sample Attempt Limit Reached")
+          # print("NO PATH FOUND - Sample Attempt Limit Reached")
           return [], self.LARGE_NUMBER
         current_node = self.generate_random_node(self.sample_random_node())
         i += 1
@@ -81,7 +86,7 @@ class Expansive_Planner():
       goal = self.generate_goal_node(current_node, self.desired_state)
 
     if(goal is None):  
-      print("NO PATH FOUND - No Collision Free Paths Found")
+      # print("NO PATH FOUND - No Collision Free Paths Found")
       return [], self.LARGE_NUMBER
       
     return self.build_traj(goal)
@@ -106,14 +111,14 @@ class Expansive_Planner():
       if(traj_dist < best_traj_cost): 
         best_traj = traj 
         best_traj_cost = traj_dist 
-    print(start_time)
-    print(time.perf_counter(), cnt)
+    # print(start_time)
+    # print(time.perf_counter(), cnt)
 
     
     # Add code here to make many trajs within a time budget and return the best traj #
     # You will want to call construct_traj #
       
-    return best_traj, best_traj_cost
+    return best_traj, best_traj_cost, cnt 
     
   def add_to_tree(self, node):
     """ Add the node to the tree.
@@ -155,9 +160,8 @@ class Expansive_Planner():
 
     # Add code here to make a new node #
     rand_node = Node(random_state, node_to_expand, rand_dist)
-    rand_node_copy = copy.deepcopy(rand_node)
     
-    if(not self.collision_found(node_to_expand, rand_node_copy)):
+    if(not self.collision_found(node_to_expand, rand_node)):
       # print(f"NO COLLISION {node_to_expand.state} to {rand_node_copy.state}" )
       # print(rand_node.state, rand_node_copy.state)
       return rand_node
@@ -212,19 +216,17 @@ class Expansive_Planner():
   
     traj = []
     traj_cost = 0
-    print("Building Trajectory")
+    # print("Building Trajectory")
     for i in range(1,len(node_list)):
       node_A = node_list[i-1]
       node_B = node_list[i]
-      print(node_A.state)
+      # print(node_A.state)
       traj_point_0 = node_A.state
       traj_point_1 = node_B.state
       #traj_point_1[3] = math.atan2(traj_point_1[2]-traj_point_0[2], traj_point_1[1]-traj_point_0[1])
       edge_traj, edge_traj_distance = construct_dubins_traj(traj_point_0, traj_point_1)
       traj = traj + edge_traj
       traj_cost = traj_cost + edge_traj_distance
-      if(self.collision_found(node_A, node_B)):
-        print("Collision found in build_traj final trajectory")
     return traj, traj_cost
 
   def collision_found(self, node_1, node_2):
@@ -241,24 +243,41 @@ class Expansive_Planner():
     return collision_found(traj, self.objects, self.walls)
 
 if __name__ == '__main__':
-  for i in range(0, 5):
-    print("------------------------------------------------------------------")
-    print("Trial Number: ", i + 1)
-    maxR = 10
-    tp0 = [0, -8, -8, 0]
-    tp1 = [300, 8, 8, 0]
-    planner = Expansive_Planner()
-    walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
-    num_objects = 10
-    # objects = [[1,1,3], [3,5,1],[5,7,1],[-2,-7,1], [-5,-7,1]]
-    objects  = []
-    for j in range(0, num_objects): 
-      obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
-      while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
+  tot_dist = 0
+  trys = 0 
+  plan_budgets = [0.1,0.1, 0.5, 0.5,1]
+  tree_size_limits = [200,1000,200,1000,200]
+  sample_limits = [10000,10000, 10000, 10000, 10000]
+  N = 10
+
+  for trial in range(len(plan_budgets)):
+    planner = Expansive_Planner(plan_budgets[trial], tree_size_limits[trial], sample_limits[trial])
+
+    for i in range(0, N):
+      # print("------------------------------------------------------------------")
+      # print("Trial Number: ", i + 1)
+      maxR = 10
+      tp0 = [0, -8, -8, 0]
+      tp1 = [300, 8, 8, 0]
+      walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
+      num_objects = 10
+      # objects = [[1,1,3], [3,5,1],[5,7,1],[-2,-7,1], [-5,-7,1]]
+      objects  = []
+      for j in range(0, num_objects): 
         obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
-      objects.append(obj)
-    traj, traj_cost = planner.construct_optimized_traj(tp0, tp1, objects, walls)
-    # traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
-    print(collision_found(traj,objects,walls))
-    if len(traj) > 0:
-      plot_traj(traj, traj, objects, walls)
+        while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
+          obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
+        objects.append(obj)
+      traj, traj_cost, cnt  = planner.construct_optimized_traj(tp0, tp1, objects, walls)
+      tot_dist += traj_cost
+      trys+= cnt
+      # traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
+      # if len(traj) > 0:
+      #   plot_traj(traj, traj, objects, walls)
+    print(f"Expansive Planner:")
+    print(f"Plan Time Budget: {plan_budgets[trial]}, Tree Size Limit: {tree_size_limits[trial]}, Sample Limit: {sample_limits[trial]}")
+    print("Avg. dist per trial")
+    print(tot_dist/N)
+    print("Avg. no of tries per trial")
+    print(trys/N)
+    print()

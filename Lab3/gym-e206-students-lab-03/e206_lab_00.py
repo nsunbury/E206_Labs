@@ -6,6 +6,7 @@ import random
 from traj_planner_utils import *
 from traj_tracker import *
 from traj_planner_A_star import *
+from traj_planner_ExpPlanner import *
     
 def main():
   # Create a motion planning problem and solve it
@@ -13,8 +14,9 @@ def main():
   # desired_traj = construct_dubins_traj(current_state, desired_state)
   
 # current_state, desired_state, objects, walls = create_motion_planning_problem()
-  planner = A_Star_Planner() 
-  desired_traj = planner.construct_traj(current_state, desired_state, objects, walls)
+  planner = Expansive_Planner() 
+  # desired_traj, traj_dist = planner.construct_traj(current_state, desired_state, objects, walls)
+  desired_traj, traj_dist, _ = planner.construct_optimized_traj(current_state, desired_state, objects, walls)
 
   # Construct an environment
   env = gym.make("fetch-v0") # <-- this we need to create
@@ -57,7 +59,7 @@ def main():
   print(RMSE_X_calc)
   print(RMSE_Y_calc)
   print(RMSE_THETA_calc)
-  time.sleep(2)
+  # time.sleep(2)
   plot_traj(desired_traj, actual_traj, objects, walls)
   
   env.close()
