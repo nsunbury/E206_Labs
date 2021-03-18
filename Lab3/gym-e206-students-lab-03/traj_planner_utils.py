@@ -23,6 +23,11 @@ def construct_dubins_traj(traj_point_0, traj_point_1):
   traj = []
   q0 = traj_point_0[1:]
   q1 = traj_point_1[1:]
+
+  # Using Linear trajectories
+  # configurations = lpg.construct_linear_path(q0,q1,DISTANCE_STEP_SIZE)
+
+  # Using Dubins trajectories
   turning_radius = 1
   path = dubins.shortest_path(q0, q1, turning_radius)
   configurations, _ = path.sample_many(DISTANCE_STEP_SIZE)
