@@ -124,6 +124,9 @@ class Expansive_Planner():
     total_trials = 0
     successful_trials = 0
 
+    error_margin = 0.01 #sec
+    time_budget_exceeded = False
+
     while (time.perf_counter()-start_time < self.PLAN_TIME_BUDGET):
       total_trials +=1 
       traj, traj_dist = self.construct_traj(initial_state, desired_state, objects, walls)
@@ -132,15 +135,19 @@ class Expansive_Planner():
       if(traj_dist < best_traj_cost): 
         best_traj = traj 
         best_traj_cost = traj_dist 
-    # print(start_time)
-    # print(time.perf_counter(), cnt)
-    print("---Optimized Trajectory---")
-    print("Best Traj Cost: ", best_traj_cost)
+
+    elapsed_time = time.perf_counter()- start_time
+    # print("---Optimized Trajectory---")
+    # print("Time Elapsed", elapsed_time)
+    if(elapsed_time-self.PLAN_TIME_BUDGET > error_margin):
+      # print("TIME BUDGET EXCEEDED!")
+      time_budget_exceeded = True
+    # print("Best Traj Cost: ", best_traj_cost)
     # print("Total Paths Attempted: ", total_trials)
     # print("Successful Paths: ", successful_trials)
     # print()
       
-    return best_traj, best_traj_cost, total_trials, successful_trials 
+    return best_traj, best_traj_cost, total_trials, successful_trials, time_budget_exceeded
     
   def add_to_tree(self, node):
     """ Add the node to the tree.
@@ -266,22 +273,27 @@ class Expansive_Planner():
 
 if __name__ == '__main__':
   
-  plan_budgets = [0.05,5]#,0.5, 1, 2.5,5]
-  tree_size_limits = [400,400]#,400,400,400,400]
-  sample_limits = [10000, 10000]#, 10000, 10000, 10000, 10000]
-  N = 5
-
+  plan_budgets = [2.5,2.5,2.5,5,5,5]#,0.5, 1, 2.5,5]
+  tree_size_limits = [5,5,6,6,7,7]#,400,400,400,400]
+  sample_limits = [400,500,500,500,500,600]#, 10000, 10000, 10000, 10000]
+  N = 1
+  print()
+  print("============= NEW TEST =============")
+  print()
   for trial in range(len(plan_budgets)):
     planner = Expansive_Planner(plan_budgets[trial], tree_size_limits[trial], sample_limits[trial])
     print()
-    print()
+    print("----------------------------")
     print(f"Expansive Planner:")
     print(f"Plan Time Budget: {plan_budgets[trial]}, Tree Size Limit: {tree_size_limits[trial]}, Sample Limit: {sample_limits[trial]}")
     tot_dist = 0
     total_trys = 0 
     successful_trys = 0
+    failures = 0
+    time_exceeded_count = 0
+
     for i in range(0, N):
-      print("Trial #", i + 1)
+      # print("Trial #", i + 1)
       maxR = 10
       tp0 = [0, -8, -8, 0]
       tp1 = [300, 8, 8, 0]
@@ -294,35 +306,42 @@ if __name__ == '__main__':
         while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
           obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
         objects.append(obj)
-      traj, traj_cost, total_trials, successful_trials  = planner.construct_optimized_traj(tp0, tp1, objects, walls)
+      traj, traj_cost, total_trials, successful_trials, time_budget_exceeded  = planner.construct_optimized_traj(tp0, tp1, objects, walls)
      
-      print("---Running Totals---")
+      # print("---Running Totals---")
 
       if(traj_cost < Expansive_Planner.LARGE_NUMBER):
         tot_dist += traj_cost
-        print("Running Total Distance: ", tot_dist)
+        # print("Distance:        ", tot_dist)
       else:
-        print("ATTEMPT FAILED")
+        # print("ATTEMPT FAILED")
+        failures += 1
+
+      if(time_budget_exceeded):
+        time_exceeded_count += 1
       total_trys+= total_trials
       successful_trys += successful_trials
       
 
- 
-      
-      print("Paths Attempted: ", total_trys)
-      print("Paths Succeeded: ", successful_trys)
-      print()
 
-      traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
-      if len(traj) > 0:
-        plot_traj(traj, traj, objects, walls)
-    dist_divisor = N*(total_trys-successful_trys)
+      
+      # print("Paths Attempted: ", total_trys)
+      # print("Paths Succeeded: ", successful_trys)
+      # print()
+
+      # traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
+      # if len(traj) > 0:
+      #   plot_traj(traj, traj, objects, walls)
+
+    dist_divisor = N - failures
     print()
-    print("---End Results---")
+    print("Number of trials exceeding budget: ", end="")
+    print(time_exceeded_count, "/", N, "=", time_exceeded_count/N)
+
     print("Avg. dist per trial: ", end="")
     print(tot_dist, "/", dist_divisor, "=", tot_dist/dist_divisor)
     print("Avg. no of attempts per trial: ", end="")
     print(total_trys, "/", N, "=", total_trys/N)
     print("Path Finding Success Rate: ", end="")
-    print(successful_trys/total_trys)
+    print(successful_trys, "/", total_trys, "=", successful_trys/total_trys)
     print()
