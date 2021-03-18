@@ -58,10 +58,10 @@ class Expansive_Planner():
   MIN_RAND_DISTANCE = 1 #m
   MAX_RAND_DISTANCE = 5 #m
   MEAN_EDGE_VELOCITY = 0.75 #m
-  PLAN_TIME_BUDGET = 1 #s
+  # PLAN_TIME_BUDGET = 1 #s
 
-  TREE_SIZE_LIMIT = 200 # To stop the tree from expanding forever if no valid paths exist
-  SAMPLE_ATTEMPT_LIMIT = 1000 # To stop the code from hanging if it can't sample a valid node
+  # TREE_SIZE_LIMIT = 200 # To stop the tree from expanding forever if no valid paths exist
+  # SAMPLE_ATTEMPT_LIMIT = 1000 # To stop the code from hanging if it can't sample a valid node
     
   def __init__(self, plan_time_budget=0.5, tree_size_limit=200, sample_attempt_limit=10000):
     self.rng = np.random.default_rng() #to generate a random number rfloat = self.rng.random()  
