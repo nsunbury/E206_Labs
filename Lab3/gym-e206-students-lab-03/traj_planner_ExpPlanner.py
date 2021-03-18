@@ -121,22 +121,26 @@ class Expansive_Planner():
     start_time = time.perf_counter()
     best_traj = []
     best_traj_cost = self.LARGE_NUMBER
-    cnt = 0
+    total_trials = 0
+    successful_trials = 0
 
     while (time.perf_counter()-start_time < self.PLAN_TIME_BUDGET):
-      cnt +=1 
+      total_trials +=1 
       traj, traj_dist = self.construct_traj(initial_state, desired_state, objects, walls)
+      if(traj_dist < self.LARGE_NUMBER):
+        successful_trials += 1
       if(traj_dist < best_traj_cost): 
         best_traj = traj 
         best_traj_cost = traj_dist 
     # print(start_time)
     # print(time.perf_counter(), cnt)
-
-    
-    # Add code here to make many trajs within a time budget and return the best traj #
-    # You will want to call construct_traj #
+    print("---Optimized Trajectory---")
+    print("Best Traj Cost: ", best_traj_cost)
+    # print("Total Paths Attempted: ", total_trials)
+    # print("Successful Paths: ", successful_trials)
+    # print()
       
-    return best_traj, best_traj_cost, cnt 
+    return best_traj, best_traj_cost, total_trials, successful_trials 
     
   def add_to_tree(self, node):
     """ Add the node to the tree.
@@ -262,25 +266,27 @@ class Expansive_Planner():
 
 if __name__ == '__main__':
   
-  plan_budgets = [0.1,0.1, 0.5, 0.5,1]
-  tree_size_limits = [200,1000,200,1000,200]
-  sample_limits = [1000,1000, 1000, 1000, 1000]
-  N = 100
+  plan_budgets = [0.05,5]#,0.5, 1, 2.5,5]
+  tree_size_limits = [400,400]#,400,400,400,400]
+  sample_limits = [10000, 10000]#, 10000, 10000, 10000, 10000]
+  N = 5
 
   for trial in range(len(plan_budgets)):
     planner = Expansive_Planner(plan_budgets[trial], tree_size_limits[trial], sample_limits[trial])
+    print()
+    print()
     print(f"Expansive Planner:")
     print(f"Plan Time Budget: {plan_budgets[trial]}, Tree Size Limit: {tree_size_limits[trial]}, Sample Limit: {sample_limits[trial]}")
     tot_dist = 0
-    trys = 0 
+    total_trys = 0 
+    successful_trys = 0
     for i in range(0, N):
-      # print("------------------------------------------------------------------")
-      # print("Trial Number: ", i + 1)
+      print("Trial #", i + 1)
       maxR = 10
       tp0 = [0, -8, -8, 0]
       tp1 = [300, 8, 8, 0]
       walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
-      num_objects = 10
+      num_objects = 15
       # objects = [[1,1,3], [3,5,1],[5,7,1],[-2,-7,1], [-5,-7,1]]
       objects  = []
       for j in range(0, num_objects): 
@@ -288,14 +294,35 @@ if __name__ == '__main__':
         while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
           obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
         objects.append(obj)
-      traj, traj_cost, cnt  = planner.construct_optimized_traj(tp0, tp1, objects, walls)
-      tot_dist += traj_cost
-      trys+= cnt
-      # traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
-      # if len(traj) > 0:
-      #   plot_traj(traj, traj, objects, walls)
+      traj, traj_cost, total_trials, successful_trials  = planner.construct_optimized_traj(tp0, tp1, objects, walls)
+     
+      print("---Running Totals---")
+
+      if(traj_cost < Expansive_Planner.LARGE_NUMBER):
+        tot_dist += traj_cost
+        print("Running Total Distance: ", tot_dist)
+      else:
+        print("ATTEMPT FAILED")
+      total_trys+= total_trials
+      successful_trys += successful_trials
+      
+
+ 
+      
+      print("Paths Attempted: ", total_trys)
+      print("Paths Succeeded: ", successful_trys)
+      print()
+
+      traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
+      if len(traj) > 0:
+        plot_traj(traj, traj, objects, walls)
+    dist_divisor = N*(total_trys-successful_trys)
+    print()
+    print("---End Results---")
     print("Avg. dist per trial: ", end="")
-    print(tot_dist/N)
-    print("Avg. no of tries per trial: ", end="")
-    print(trys/N)
+    print(tot_dist, "/", dist_divisor, "=", tot_dist/dist_divisor)
+    print("Avg. no of attempts per trial: ", end="")
+    print(total_trys, "/", N, "=", total_trys/N)
+    print("Path Finding Success Rate: ", end="")
+    print(successful_trys/total_trys)
     print()
