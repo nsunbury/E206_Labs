@@ -80,7 +80,6 @@ class Expansive_Planner():
     self.desired_state = desired_state
     self.objects = objects
     self.walls = walls
-    print(time.perf_counter()-start_time)
 
     current_node = Node(initial_state, None, 0)
     self.add_to_tree(current_node)
@@ -91,17 +90,19 @@ class Expansive_Planner():
       i = 0
       while(current_node is None): 
         if(time.perf_counter()-start_time > self.PLAN_TIME_BUDGET):
-          print("NO PATH FOUND in ", self.PLAN_TIME_BUDGET, "seconds")
-          return [], self.LARGE_NUMBER
+          break
         current_node = self.generate_random_node(self.sample_random_node())
         i += 1
+
+      if(time.perf_counter()-start_time > self.PLAN_TIME_BUDGET):
+          break
+      
       self.add_to_tree(current_node)
       goal = self.generate_goal_node(current_node, self.desired_state)
-
-    if(goal is None):  
-      # print("NO PATH FOUND - No Collision Free Paths Found")
-      return [], self.LARGE_NUMBER
       
+    if(goal is None):  
+      return [], self.LARGE_NUMBER
+    
     return self.build_traj(goal)
     
   def construct_optimized_traj(self, initial_state, desired_state, objects, walls):
@@ -128,7 +129,11 @@ class Expansive_Planner():
         best_traj = traj 
         best_traj_cost = traj_dist 
       
-    print(time.perf_counter()-start_time)
+    
+    # if(best_traj == []):
+    #   print("NO PATHS FOUND in ", time.perf_counter()-start_time, "seconds")
+    # else:
+    #   print(successful_trials, "PATHS FOUND in ", time.perf_counter()-start_time, "seconds")
     return best_traj, best_traj_cost, total_trials, successful_trials
     
   def add_to_tree(self, node):
@@ -136,10 +141,6 @@ class Expansive_Planner():
         Arguments:
           node (Node): The node to be added.
     """
-    # print(node.state)
-    # if(node.parent_node is not None):
-      # print("parent:", node.parent_node.state)
-      # print()
     self.tree.append(node)
     return 
     
@@ -245,12 +246,14 @@ class Expansive_Planner():
 
 if __name__ == '__main__':
   
-  plan_budgets = [0.5]
+  plan_budgets = [0.01,0.05,0.1,0.25]
 
-  N = 3
+  N = 200
 
   for trial in range(len(plan_budgets)):
     planner = Expansive_Planner(plan_budgets[trial])
+    print("Planning Time Budget: ", plan_budgets[trial])
+    
 
     tot_dist = 0
     total_trys = 0 
@@ -259,11 +262,13 @@ if __name__ == '__main__':
     time_exceeded_count = 0
 
     for i in range(0, N):
+      # print("Trial #", i)
+      
       maxR = 10
       tp0 = [0, -8, -8, 0]
       tp1 = [300, 8, 8, 0]
       walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
-      num_objects = 15
+      num_objects = 25
       # objects = [[1,1,3], [3,5,1],[5,7,1],[-2,-7,1], [-5,-7,1]]
       objects  = []
       for j in range(0, num_objects): 
@@ -282,14 +287,15 @@ if __name__ == '__main__':
       total_trys+= total_trials
       successful_trys += successful_trials
       
-      # traj, traj_cost = planner.construct_traj(tp0, tp1, objects, walls)
-      if len(traj) > 0:
-        plot_traj(traj, traj, objects, walls)
+      # if len(traj) > 0:
+      #   plot_traj(traj, traj, objects, walls)
     
     dist_divisor = N - failures
-    print("dist divisor ", dist_divisor)
+    if (dist_divisor == 0):
+      dist_divisor = 1
+    # print("dist divisor ", dist_divisor)
 
-    print("Avg. dist per trial: ", end="")
+    print("Avg. Final Path Distance: ", end="")
     print(tot_dist, "/", dist_divisor, "=", tot_dist/dist_divisor)
     print("Avg. no of attempts per trial: ", end="")
     print(total_trys, "/", N, "=", total_trys/N)

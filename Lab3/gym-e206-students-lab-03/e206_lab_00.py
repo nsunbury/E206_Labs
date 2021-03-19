@@ -16,7 +16,7 @@ def main():
 # current_state, desired_state, objects, walls = create_motion_planning_problem()
   planner = Expansive_Planner() 
   # desired_traj, traj_dist = planner.construct_traj(current_state, desired_state, objects, walls)
-  desired_traj, traj_dist, _ = planner.construct_optimized_traj(current_state, desired_state, objects, walls)
+  desired_traj, traj_dist, _, _ = planner.construct_optimized_traj(current_state, desired_state, objects, walls)
 
   # Construct an environment
   env = gym.make("fetch-v0") # <-- this we need to create
@@ -70,8 +70,22 @@ def create_motion_planning_problem():
   maxR = 10
   walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
   objects = [[3, 3, 1], [1, 1, 0.5]]
+
+  # maxR = 10
+  # tp0 = [0, 0, 0, 0]
+  # tp1 = [20, 8, 8, 0]
+  # walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
+  # num_objects = 25
+  objects = [[1,1,3], [3,5,1],[5,7,1],[-2,-7,1], [-5,-7,1]]
+  # objects  = []
+  # for j in range(0, num_objects): 
+  #   obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
+  #   while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
+  #     obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
+  #   objects.append(obj)
   
   return current_state, desired_state, objects, walls
+  # return tp0, tp1, objects, walls
 
 if __name__ == '__main__':
     main()
