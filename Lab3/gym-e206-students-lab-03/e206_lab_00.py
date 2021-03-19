@@ -24,6 +24,8 @@ def main():
   env.render('human')
   env.reset()
 
+  random.seed(153465842)
+
   # Create the trajectory and tracking controller
   controller = PointTracker()
   traj_tracker = TrajectoryTracker(desired_traj)
@@ -65,19 +67,15 @@ def main():
   env.close()
 
 def create_motion_planning_problem():
-  # current_state = [0, 0, 0, 0]
-  # desired_state = [20, 7, 7, 0]
-  # maxR = 10
-  # walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
-  # objects = [[3, 3, 1], [-15, 70, 0.5], [1, 1, 0.5], [-2,-7,1], [3,5,1]]
 
+  # random.seed(1120)
   maxR = 10
   current_state = [0, 0, 0, 0]
   desired_state = [20, 8, 8, 0]
   tp0 = [0, -8, -8, 0]
   tp1 = [300, 8, 8, 0]
   walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
-  num_objects = 20
+  num_objects = 10
   objects  = []
   for j in range(0, num_objects): 
     obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
@@ -90,7 +88,6 @@ def create_motion_planning_problem():
   print()
   print()
   return current_state, desired_state, objects, walls
-  # return tp0, tp1, objects, walls
 
 if __name__ == '__main__':
     main()

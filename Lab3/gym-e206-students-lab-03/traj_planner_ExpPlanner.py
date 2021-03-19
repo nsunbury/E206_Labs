@@ -246,7 +246,7 @@ class Expansive_Planner():
 
 if __name__ == '__main__':
   
-  plan_budgets = [0.01,0.05,0.1,0.25]
+  plan_budgets = [0.001,0.01,0.05,0.1,0.25]
 
   N = 200
 
@@ -265,8 +265,8 @@ if __name__ == '__main__':
       # print("Trial #", i)
       
       maxR = 10
-      tp0 = [0, -8, -8, 0]
-      tp1 = [300, 8, 8, 0]
+      tp0 = [0, -9, -9, 0]
+      tp1 = [300, 9, 7, 0]
       walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
       num_objects = 25
       # objects = [[1,1,3], [3,5,1],[5,7,1],[-2,-7,1], [-5,-7,1]]

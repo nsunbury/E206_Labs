@@ -6,6 +6,7 @@
 import math
 import dubins
 import matplotlib.pyplot as plt
+import linear_path_generator as lpg
 
 DISTANCE_STEP_SIZE = 0.75 #m
 COLLISION_INDEX_STEP_SIZE = 1
