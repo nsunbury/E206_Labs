@@ -287,8 +287,8 @@ if __name__ == '__main__':
       total_trys+= total_trials
       successful_trys += successful_trials
       
-      # if len(traj) > 0:
-      #   plot_traj(traj, traj, objects, walls)
+      if len(traj) > 0:
+        plot_traj(traj, traj, objects, walls)
     
     dist_divisor = N - failures
     if (dist_divisor == 0):

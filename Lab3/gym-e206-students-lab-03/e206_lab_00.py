@@ -65,25 +65,30 @@ def main():
   env.close()
 
 def create_motion_planning_problem():
-  current_state = [0, 0, 0, 0]
-  desired_state = [20, 7, 7, 0]
-  maxR = 10
-  walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
-  objects = [[3, 3, 1], [1, 1, 0.5]]
-
+  # current_state = [0, 0, 0, 0]
+  # desired_state = [20, 7, 7, 0]
   # maxR = 10
-  # tp0 = [0, 0, 0, 0]
-  # tp1 = [20, 8, 8, 0]
   # walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
-  # num_objects = 25
-  objects = [[1,1,3], [3,5,1],[5,7,1],[-2,-7,1], [-5,-7,1]]
-  # objects  = []
-  # for j in range(0, num_objects): 
-  #   obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
-  #   while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
-  #     obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
-  #   objects.append(obj)
-  
+  # objects = [[3, 3, 1], [-15, 70, 0.5], [1, 1, 0.5], [-2,-7,1], [3,5,1]]
+
+  maxR = 10
+  current_state = [0, 0, 0, 0]
+  desired_state = [20, 8, 8, 0]
+  tp0 = [0, -8, -8, 0]
+  tp1 = [300, 8, 8, 0]
+  walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
+  num_objects = 20
+  objects  = []
+  for j in range(0, num_objects): 
+    obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
+    while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
+      obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
+    objects.append(obj)
+  print()
+  print()
+  print("Objects: ", objects)
+  print()
+  print()
   return current_state, desired_state, objects, walls
   # return tp0, tp1, objects, walls
 
