@@ -246,7 +246,7 @@ class Expansive_Planner():
 
 if __name__ == '__main__':
   
-  plan_budgets = [0.001,0.01,0.05,0.1,0.25]
+  plan_budgets = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5]
 
   N = 200
 
@@ -266,16 +266,16 @@ if __name__ == '__main__':
       
       maxR = 10
       tp0 = [0, -9, -9, 0]
-      tp1 = [300, 9, 7, 0]
+      tp1 = [300, 9, 9, 0]
       walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
-      num_objects = 25
-      # objects = [[1,1,3], [3,5,1],[5,7,1],[-2,-7,1], [-5,-7,1]]
-      objects  = []
-      for j in range(0, num_objects): 
-        obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
-        while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
-          obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
-        objects.append(obj)
+      num_objects = 30
+      objects = [[7.300744881735806, -3.4625745325439246, 1.0], [3.8395292711090523, -0.8818064621920527, 1.0], [-6.023859778546766, -8.636106387738197, 1.0], [8.60967175714691, -0.7317647868509081, 1.0], [-6.726803706089509, 1.404413448327718, 1.0], [-1.2338800806273484, 8.044835525870948, 1.0], [-3.1936037757137345, -3.45521530678933, 1.0], [2.5029518681525715, 4.583665493193516, 1.0], [-1.5438726461909784, -4.515987863722199, 1.0], [-1.8982329663512783, -3.1563897547165887, 1.0], [-0.4355319804104365, 1.9853852874394384, 1.0], [-1.0312556395825965, 8.138283713552457, 1.0], [3.1353998005407426, -1.7720269827649346, 1.0], [4.735819486673154, 7.302123381357145, 1.0], [-0.9542953474752842, -4.090133293937513, 1.0], [0.44060864130242017, 3.4664969795405547, 1.0], [1.825678503415098, -7.811670794890416, 1.0], [4.383551061073588, 8.343577873987368, 1.0], [-2.0512064497973608, 4.288975610254326, 1.0], [6, 1.5, 1]]
+      # objects  = []
+      # for j in range(0, num_objects): 
+      #   obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
+      #   while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
+      #     obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
+      #   objects.append(obj)
       traj, traj_cost, total_trials, successful_trials  = planner.construct_optimized_traj(tp0, tp1, objects, walls)
      
 
@@ -287,8 +287,8 @@ if __name__ == '__main__':
       total_trys+= total_trials
       successful_trys += successful_trials
       
-      if len(traj) > 0:
-        plot_traj(traj, traj, objects, walls)
+      # if len(traj) > 0:
+      #   plot_traj(traj, traj, objects, walls)
     
     dist_divisor = N - failures
     if (dist_divisor == 0):

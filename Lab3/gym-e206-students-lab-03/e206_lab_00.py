@@ -51,16 +51,18 @@ def main():
     current_time_stamp += TIME_STEP_SIZE
     RMSE_X.append((desired_state[1]-current_state[1])**2)
     RMSE_Y.append((desired_state[2]-current_state[2])**2)
-    RMSE_THETA.append((desired_state[3]-current_state[3])**2)
+    RMSE_THETA.append(angle_diff((desired_state[3]-current_state[3]))**2)
     N+=1 
 
   RMSE_X_calc = math.sqrt(sum(RMSE_X)/N)
   RMSE_Y_calc = math.sqrt(sum(RMSE_Y)/N)
   RMSE_THETA_calc = math.sqrt(sum(RMSE_THETA)/N)
   print("------RMSE-------")
-  print(RMSE_X_calc)
-  print(RMSE_Y_calc)
-  print(RMSE_THETA_calc)
+  print("X: ", RMSE_X_calc)
+  print("Y: ", RMSE_Y_calc)
+  print("Theta: ", RMSE_THETA_calc)
+  print("----Path Length----")
+  print(traj_dist)
   # time.sleep(2)
   plot_traj(desired_traj, actual_traj, objects, walls)
   
@@ -68,20 +70,24 @@ def main():
 
 def create_motion_planning_problem():
 
-  # random.seed(1120)
+  random.seed(16520)
   maxR = 10
   current_state = [0, 0, 0, 0]
-  desired_state = [20, 8, 8, 0]
-  tp0 = [0, -8, -8, 0]
-  tp1 = [300, 8, 8, 0]
+  desired_state = [45, 8, 8, 0]
+  tp0 = current_state
+  tp1 = desired_state
+  # tp0 = [0, -8, -8, 0]
+  # tp1 = [300, 8, 8, 0]
   walls = [[-maxR, maxR, maxR, maxR, 2*maxR], [maxR, maxR, maxR, -maxR, 2*maxR], [maxR, -maxR, -maxR, -maxR, 2*maxR], [-maxR, -maxR, -maxR, maxR, 2*maxR] ]
-  num_objects = 10
+  num_objects = 20
   objects  = []
   for j in range(0, num_objects): 
     obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
     while (abs(obj[0]-tp0[1]) < 1 and abs(obj[1]-tp0[2]) < 1) or (abs(obj[0]-tp1[1]) < 1 and abs(obj[1]-tp1[2]) < 1):
       obj = [random.uniform(-maxR+1, maxR-1), random.uniform(-maxR+1, maxR-1), 1.0]
     objects.append(obj)
+  objects.append([5,5,1])
+  objects.append([4,2,1])
   print()
   print()
   print("Objects: ", objects)

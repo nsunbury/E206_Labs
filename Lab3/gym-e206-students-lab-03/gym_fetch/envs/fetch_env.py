@@ -21,7 +21,9 @@ class FetchEnv(gym.Env):
     self.action_space = spaces.Box(np.array([-VEL_MAX, -VEL_MAX, -3.14, -3.14, -3.14, -3.14, -3.14, -3.14, -3.14, -3.14, -3.14, -3.14]), np.array([VEL_MAX, VEL_MAX, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14]), dtype=np.float32)
     self.observation_space = spaces.Box(np.array([-5, -5, -math.pi]), np.array([5, 5, math.pi]))
 
-    self.physicsClient = p.connect(p.GUI)
+    # CHANGE THIS LINE TO SHOW/HIDE GYM GUI
+    # self.physicsClient = p.connect(p.GUI)
+    self.physicsClient = p.connect(p.DIRECT)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())  # used by loadURDF
     p.URDF_USE_MATERIAL_COLORS_FROM_MTL
     p.URDF_USE_MATERIAL_TRANSPARANCY_FROM_MTL
