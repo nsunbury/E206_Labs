@@ -16,7 +16,7 @@ def main():
 # current_state, desired_state, objects, walls = create_motion_planning_problem()
   planner = Expansive_Planner() 
   # desired_traj, traj_dist = planner.construct_traj(current_state, desired_state, objects, walls)
-  desired_traj, traj_dist, _ = planner.construct_optimized_traj(current_state, desired_state, objects, walls)
+  desired_traj, traj_dist, _, _, _ = planner.construct_optimized_traj(current_state, desired_state, objects, walls)
 
   # Construct an environment
   env = gym.make("fetch-v0") # <-- this we need to create

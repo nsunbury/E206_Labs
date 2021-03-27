@@ -233,7 +233,6 @@ class A_Star_Planner():
     return collision_found(traj, self.objects, self.walls)
 
 # # Original Code from Prof. Clark
-random.seed(12)
 total_distance = 0
 cnt = 0
 if __name__ == '__main__':

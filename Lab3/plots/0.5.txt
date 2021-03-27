@@ -1,0 +1,78 @@
+----------------------------
+Expansive Planner:
+Plan Time Budget: 0.5, Tree Size Limit: 4000, Sample Limit: 100
+Avg. dist per trial: 2403.75 / 80 = 30.046875
+Avg. no of attempts per trial: 11412 / 100 = 114.12
+Path Finding Success Rate: 9363 / 11412 = 0.8204521556256572
+
+
+----------------------------
+Expansive Planner:
+Plan Time Budget: 0.5, Tree Size Limit: 4000, Sample Limit: 500
+Avg. dist per trial: 1986.75 / 69 = 28.793478260869566
+Avg. no of attempts per trial: 13380 / 100 = 133.8
+Path Finding Success Rate: 12927 / 13380 = 0.9661434977578476
+
+
+----------------------------
+Expansive Planner:
+Plan Time Budget: 0.5, Tree Size Limit: 4000, Sample Limit: 2000
+Avg. dist per trial: 2300.25 / 76 = 30.26644736842105
+Avg. no of attempts per trial: 10732 / 100 = 107.32
+Path Finding Success Rate: 10537 / 10732 = 0.9818300409988818
+
+
+----------------------------
+Expansive Planner:
+Plan Time Budget: 0.5, Tree Size Limit: 4000, Sample Limit: 4000
+Avg. dist per trial: 2072.25 / 68 = 30.47426470588235
+Avg. no of attempts per trial: 6973 / 100 = 69.73
+Path Finding Success Rate: 6840 / 6973 = 0.9809264305177112
+
+
+----------------------------
+Expansive Planner:
+Plan Time Budget: 0.5, Tree Size Limit: 4000, Sample Limit: 8000
+Avg. dist per trial: 2295.0 / 74 = 31.013513513513512
+Avg. no of attempts per trial: 9253 / 100 = 92.53
+Path Finding Success Rate: 9142 / 9253 = 0.9880038906300659
+
+
+----------------------------
+Expansive Planner:
+Plan Time Budget: 0.5, Tree Size Limit: 100, Sample Limit: 1000
+Avg. dist per trial: 1675.5 / 59 = 28.39830508474576
+Avg. no of attempts per trial: 12676 / 100 = 126.76
+Path Finding Success Rate: 11550 / 12676 = 0.9111707163142947
+
+
+----------------------------
+Expansive Planner:
+Plan Time Budget: 0.5, Tree Size Limit: 500, Sample Limit: 1000
+Avg. dist per trial: 2160.0 / 72 = 30.0
+Avg. no of attempts per trial: 8785 / 100 = 87.85
+Path Finding Success Rate: 8436 / 8785 = 0.9602731929425157
+
+
+----------------------------
+Expansive Planner:
+Plan Time Budget: 0.5, Tree Size Limit: 1000, Sample Limit: 1000
+Avg. dist per trial: 2146.5 / 73 = 29.404109589041095
+Avg. no of attempts per trial: 15625 / 100 = 156.25
+Path Finding Success Rate: 15354 / 15625 = 0.982656
+
+
+----------------------------
+Expansive Planner:
+Plan Time Budget: 0.5, Tree Size Limit: 8000, Sample Limit: 1000
+Avg. dist per trial: 2094.75 / 68 = 30.80514705882353
+Avg. no of attempts per trial: 9276 / 100 = 92.76
+Path Finding Success Rate: 8919 / 9276 = 0.9615135834411385
+
+
+----------------------------
+Expansive Planner:
+Plan Time Budget: 0.5, Tree Size Limit: 12000, Sample Limit: 1000
+Avg. dist per trial: 2041.5 / 69 = 29.58695652173913
+Avg. no of attempts per trial: 8134 / 100 = 81.34
+Path Finding Success Rate: 7813 / 8134 = 0.9605360216375707
