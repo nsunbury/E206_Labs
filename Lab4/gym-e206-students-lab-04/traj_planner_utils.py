@@ -202,7 +202,9 @@ def collision_found(traj, objects, walls):
   return False
   
 def collision_with_traj(traj, traj_point):
-  
+  #TODO: Check if this causes issues 
+  if(len(traj)==0):
+    return False 
   traj_point_time = traj_point[0]
   begin_time = traj[0][0]
   end_time = traj[-1][0]
@@ -210,7 +212,7 @@ def collision_with_traj(traj, traj_point):
     return False
   elif traj_point_time < begin_time:
     traj_point_at_time = traj[0]
-  elif traj_point_time > end_time:
+  elif traj_point_time >= end_time:
     traj_point_at_time = traj[-1]
   else:
     time_fraction = traj_point_time / (end_time - begin_time)

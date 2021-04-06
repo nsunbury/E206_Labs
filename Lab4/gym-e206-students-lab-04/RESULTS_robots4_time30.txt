@@ -1,0 +1,4 @@
+
+PRIORITY with 50 runs: 40.176m average
+STATIC with 50 runs: 40.19200000000002m average
+RANDOM with 50 runs: 40.19000000000001m average

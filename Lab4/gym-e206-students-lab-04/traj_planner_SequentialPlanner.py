@@ -11,6 +11,7 @@ from traj_planner_utils import *
 import numpy as np
 import time
 from traj_planner_ExpPlanner import *
+import sys 
 
 class Planning_Problem():
   """ Class that holds a single motion planning problem for one robot.
@@ -101,16 +102,37 @@ def get_new_random_pose(pose_list, maxR, radius):
   
   return new_pose + [radius]
 
-if __name__ == '__main__':
-  SEQ_TIME_BUDEGET = 60
-  num_robots = 7
-  num_objects = 3
+def dist(state1, state2): 
+  return math.sqrt(((state2[1]-state1[1])**2) + ((state2[2]-state1[2])**2))
+
+def priority_calc(initial_state, objects): 
+  cnt = 0 
+  for obj in objects: 
+    print(obj)
+    if(obj[0]=="object" and dist(initial_state, [None, obj[1][0], obj[1][1], None])): 
+      cnt+=1 
+  return cnt
+
+def tuple_zero(item): 
+  return item[0]
+
+def main(argv):
+  seed = 25
+  random.seed(seed)
+  SEQ_TIME_BUDEGET = 30
+
+  num_robots = 4
+  num_objects = 15
   maxR = 10
   obj_vel = 1.0
   desired_end_time = 1000
 
+  best_traj_seq= []
+  best_traj_dist_seq = 999999
+
   #Set to STATIC, RANDOM, PRIORITY
-  ordering = "RANDOM"
+  ordering = argv[0]
+  print(ordering)
   
   robot_initial_pose_list = []
   robot_initial_state_list = []
@@ -144,6 +166,20 @@ if __name__ == '__main__':
   
   start_time= time.perf_counter()
   seq_cnt = 0
+  
+  pp_priority  = []
+
+  if(ordering == "PRIORITY"):
+    for i in range(num_robots):
+      # dist_states = dist(robot_initial_state_list[i], robot_desired_state_list[i])
+      # pp_priority.append((dist_states,i))
+      obj_priority = priority_calc(robot_initial_state_list[i], object_list)
+      pp_priority.append((obj_priority,i))
+
+    pp_priority.sort(key=tuple_zero, reverse= True)
+  
+
+  
   while(time.perf_counter()-start_time < SEQ_TIME_BUDEGET):
     planning_problem_list = []
     robot_initial_state_list = copy.deepcopy(robot_initial_state_list_duplicate)
@@ -158,7 +194,8 @@ if __name__ == '__main__':
         alloted_time  = time_left / (2**(num_robots-i))
         pp = Planning_Problem(robot_initial_state_list[i], robot_desired_state_list[i], object_list, walls, alloted_time)
         planning_problem_list.append(pp)
-    elif(ordering=="RANDOM"): 
+  
+    elif(ordering == "RANDOM"): 
       rangevals = np.arange(num_robots)
       np.random.shuffle(rangevals)
       for i,ind in enumerate(rangevals):
@@ -166,25 +203,71 @@ if __name__ == '__main__':
         pp = Planning_Problem(robot_initial_state_list[ind], robot_desired_state_list[ind], object_list, walls, alloted_time)
         planning_problem_list.append(pp)
 
+    elif(ordering == "PRIORITY"): 
+      for i,ind in enumerate(pp_priority):
+        alloted_time  = time_left / (2**(num_robots-i))
+        pp = Planning_Problem(robot_initial_state_list[ind[1]], robot_desired_state_list[ind[1]], object_list, walls, alloted_time)
+        planning_problem_list.append(pp)
+
+      
+    else: 
+      print("ERROR")
+      return
+
     planner = Sequential_Planner()
     traj_list, traj_dist , planned = planner.construct_traj_set(planning_problem_list)
-    seq_cnt+= 1 
+    if(traj_dist < best_traj_dist_seq and len(traj_list)!= 0):
+      # print("\n--------------------\n \n \n \n --------------\n")
+      # print("traj_list",traj_list[0][0])
+      best_traj_seq = copy.deepcopy(traj_list) 
+      best_traj_dist_seq = traj_dist
+      # print("best_traj",best_traj[0][0])
+    
     total_path_length += traj_dist 
     if(planned): 
+      seq_cnt+= 1 
       success +=1 
       # plot_traj_list(traj_list, object_list, walls)
     else: 
       fails += 1
-  f = open(f"robots{num_robots}_time{SEQ_TIME_BUDEGET}_{ordering}.txt", "a")
+  # if(len(best_traj_seq)!=0):
+  #   plot_traj_list(best_traj_seq, object_list, walls)
+  
+  f = open(f"robots{num_robots}_time{SEQ_TIME_BUDEGET}_{ordering}_{seed}.txt", "a")
   f.write("\n----------------------------")
   f.write(f"\nTIME BUDGET:{SEQ_TIME_BUDEGET}")
   f.write(f"\nNO OF ROBOTS: {num_robots}")
   f.write(f"\nNO OF OBJECTS: {num_objects}, OBJ_VELOCITY: {obj_vel}")
-  f.write(f"\nAVERAGE PATH LENGTH: {(total_path_length/seq_cnt)}")
+  f.write(f"\nTOTAL PATH LENGTH: {total_path_length}")
+  if(seq_cnt!=0):
+    f.write(f"\nAVERAGE PATH LENGTH: {(total_path_length/seq_cnt)}")
+  f.write(f"\nBEST PATH LENGTH: {best_traj_dist_seq}")
   f.write(f"\nSUCCESSES: {success}, FAILURES:{fails}\n")
 
   print("TIME BUDGET:", SEQ_TIME_BUDEGET)
   print("NO OF ROBOTS", num_robots)
   print(f"NO OF OBJECTS: {num_objects}, OBJ_VELOCITY: {obj_vel}")
-  print("AVERAGE PATH LENGTH", (total_path_length/seq_cnt))
+  if(seq_cnt!=0):
+    print("AVERAGE PATH LENGTH", (total_path_length/seq_cnt))
   print("SUCCESSES:", success, " FAILURES: ", fails)
+  if(success!=0):
+    return best_traj_dist_seq
+  return -1
+
+if __name__ == '__main__':
+  N = 50
+  results = {}
+  orderings= ["PRIORITY", "STATIC", "RANDOM"]
+  f = open(f"RESULTS_robots{4}_time{30}.txt", "a")
+  for order in orderings:
+    path_sum = 0
+    for i in range(N):
+      path_sum+= main([order])
+    results[order] = (path_sum/N)
+    f.write(f"\n{order} with {N} runs: {results[order]}m average")
+
+  
+  print("Number of Runs", N)
+  print(results)
+  
+  # main(["STATIC"])

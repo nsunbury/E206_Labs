@@ -120,7 +120,7 @@ class Expansive_Planner():
 
     start_time = time.perf_counter()
     end_time = start_time + self.PLAN_TIME_BUDGET
-    MAX_TRYS = 10 
+    MAX_TRYS = 10
     cnt = 0
 
     while (time.perf_counter() < end_time and cnt < MAX_TRYS):
@@ -167,10 +167,13 @@ class Expansive_Planner():
     rand_angle = angle_diff(self.rng.random() * 2 * np.pi - np.pi)
     rand_dist =  self.MIN_RAND_DISTANCE + self.rng.random() * (self.MAX_RAND_DISTANCE- self.MIN_RAND_DISTANCE)
     # print(rand_dist)
-
+    SAMPLE_MIN = 0.1
+    SAMPLE_MAX = 1 
+    sample_range = SAMPLE_MAX - SAMPLE_MIN
+    sample_vel = SAMPLE_MIN + (self.rng.random()*sample_range)
     parent_node_time, parent_node_x, parent_node_y, parent_node_theta = node_to_expand.state
     random_state = []
-    random_state.append(parent_node_time + rand_dist/self.MEAN_EDGE_VELOCITY)
+    random_state.append(parent_node_time + rand_dist/sample_vel)
     random_state.append(parent_node_x + rand_dist * np.cos(angle_diff(parent_node_theta + rand_angle)))
     random_state.append(parent_node_y + rand_dist * np.sin(angle_diff(parent_node_theta + rand_angle)))
     random_state.append(angle_diff(parent_node_theta + 2 * rand_angle))
